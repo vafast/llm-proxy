@@ -7,8 +7,6 @@ declare global {
   interface Env {
     PROXY_API_KEY?: string;
     CLOUDFLARE_ACCOUNT_ID?: string;
-    AI_GATEWAY_NAME?: string;
-    CF_AIG_TOKEN?: string;
     OPENAI_API_KEY?: string;
     GEMINI_API_KEY?: string;
     ANTHROPIC_API_KEY?: string;
@@ -35,7 +33,6 @@ declare global {
    */
   interface Request {
     pathname?: string;
-    aiGateway?: import("./ai_gateway").CloudflareAIGateway;
     apiKeyIndex?: number | { start?: number; end?: number };
   }
 }

@@ -5,10 +5,10 @@ import { createInterface, Interface } from "readline";
 const CONFIG_EXAMPLE_PATH = "config.example.jsonc";
 const CONFIG_OUTPUT_PATH = "config.jsonc";
 
-// Configuration: Required fields (must be provided by user)
+// 配置：必填字段（用户需提供）
 const REQUIRED_FIELDS = ["PROXY_API_KEY"];
 
-// Configuration: Fields to ignore (won't be prompted for)
+// 配置：忽略字段（不提示）
 const IGNORED_FIELDS = [
   "$schema",
   "CLOUDFLARE_ACCOUNT_ID",
@@ -20,7 +20,7 @@ const IGNORED_FIELDS = [
   "ENABLE_GLOBAL_ROUND_ROBIN",
 ];
 
-// Configuration: Fields that require at least one to be set
+// 配置：至少需设置其一的字段
 const API_KEY_FIELDS_GROUP = [
   "OPENAI_API_KEY",
   "GEMINI_API_KEY",
@@ -119,7 +119,7 @@ function getFieldDescription(key: string, comment?: string): string {
     return comment;
   }
 
-  // Fallback descriptions based on key patterns
+  // 根据 key 模式回退描述
   if (key.includes("API_KEY")) {
     return `API key for ${key.replace("_API_KEY", "").toLowerCase()}`;
   }
@@ -152,10 +152,10 @@ async function promptForValue(
   } while (isRequired && !value.trim());
 
   if (!value.trim()) {
-    return null; // Return null for empty input instead of currentValue
+    return null; // 空输入返回 null 而非 currentValue
   }
 
-  // Try to parse as JSON, otherwise return as string
+  // 尝试 JSON 解析，否则返回字符串
   try {
     return JSON.parse(value);
   } catch {
@@ -176,13 +176,13 @@ function reconstructJsonc(
       continue;
     }
 
-    // Skip null values (empty inputs)
+    // 跳过 null（空输入）
     const value = config[item.key];
     if (value === null || value === undefined) {
       continue;
     }
 
-    // Add section headers based on comments
+    // 根据注释添加分区标题
     if (item.comment && item.comment.includes("---")) {
       if (currentSection) {
         result += "\n";
@@ -193,11 +193,11 @@ function reconstructJsonc(
       result += `  // ${item.comment}\n`;
     }
 
-    // Add the key-value pair
+    // 添加键值对
     result += `  "${item.key}": ${JSON.stringify(value)},\n`;
   }
 
-  // Remove trailing comma and close
+  // 移除尾逗号并闭合
   result = result.replace(/,\n$/, "\n");
   result += "}";
 
@@ -218,14 +218,14 @@ async function main(): Promise<void> {
     if (overwrite.toLowerCase() !== "y" && overwrite.toLowerCase() !== "yes") {
       console.log("Cancelled.");
       process.exit(0);
-      return; // Add return to prevent further execution in tests
+      return; // 测试中阻止后续执行
     }
   }
 
   if (!existsSync(CONFIG_EXAMPLE_PATH)) {
     console.error(`Error: ${CONFIG_EXAMPLE_PATH} not found.`);
     process.exit(1);
-    return; // Add return to prevent further execution in tests
+    return; // 测试中阻止后续执行
   }
 
   const exampleContent = readFileSync(CONFIG_EXAMPLE_PATH, "utf8");
@@ -238,7 +238,7 @@ async function main(): Promise<void> {
       "Starting configuration setup. Please enter values for each field.\n",
     );
 
-    // Process all fields from the structure
+    // 处理结构体全部字段
     for (const item of structure) {
       if (IGNORED_FIELDS.includes(item.key)) {
         continue;
@@ -256,7 +256,7 @@ async function main(): Promise<void> {
       );
     }
 
-    // Check if at least one API key is provided
+    // 检查是否至少提供一个 API key
     const hasApiKey = API_KEY_FIELDS_GROUP.some((key) => {
       const value = config[key];
       return value !== null && value !== undefined && value !== "";
@@ -281,7 +281,7 @@ async function main(): Promise<void> {
       error instanceof Error ? error.message : String(error),
     );
     process.exit(1);
-    return; // Add return to prevent further execution in tests
+    return; // 测试中阻止后续执行
   } finally {
     rl.close();
   }
@@ -289,7 +289,7 @@ async function main(): Promise<void> {
 
 export { main };
 
-// Run main function if this script is executed directly
+// 直接执行脚本时运行 main
 if (import.meta.url === `file://${process.argv[1]}`) {
   main().catch(console.error);
 }

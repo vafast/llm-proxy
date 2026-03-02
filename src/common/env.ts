@@ -15,14 +15,9 @@ const parsed = cleanEnv(process.env, {
   // 代理鉴权
   PROXY_API_KEY: str({ default: "" }),
 
-  // AI Gateway（Cloudflare，可选）
-  CLOUDFLARE_ACCOUNT_ID: str({ default: "" }),
-  AI_GATEWAY_NAME: str({ default: "" }),
-  CF_AIG_TOKEN: str({ default: "" }),
-
-  // Upstash Redis（Key 轮询，可选）
-  KV_REST_API_URL: str({ default: "" }),
-  KV_REST_API_TOKEN: str({ default: "" }),
+  // Redis（Key 轮询，可选。支持 redis:// URL，优先 REDIS_PUBLIC_URL 用于公网）
+  REDIS_URL: str({ default: "" }),
+  REDIS_PUBLIC_URL: str({ default: "" }),
 
   // Provider API Keys
   OPENAI_API_KEY: str({ default: "" }),
@@ -64,15 +59,10 @@ export const proxyConfig = {
   enableGlobalRoundRobin: parsed.ENABLE_GLOBAL_ROUND_ROBIN,
 } as const;
 
-export const aiGatewayConfig = {
-  accountId: parsed.CLOUDFLARE_ACCOUNT_ID || undefined,
-  name: parsed.AI_GATEWAY_NAME || undefined,
-  token: parsed.CF_AIG_TOKEN || undefined,
-} as const;
-
 export const redisConfig = {
-  url: parsed.KV_REST_API_URL || undefined,
-  token: parsed.KV_REST_API_TOKEN || undefined,
+  /** 优先公网 URL（本地测试 Railway 等），否则用 REDIS_URL */
+  url:
+    parsed.REDIS_PUBLIC_URL || parsed.REDIS_URL || undefined,
 } as const;
 
 export const providerKeys = {

@@ -1,4 +1,5 @@
 import { Config } from "./config";
+import { validateKey } from "../db/keys";
 
 export const AUTHORIZATION_KEYS = [
   "Authorization",
@@ -8,25 +9,7 @@ export const AUTHORIZATION_KEYS = [
 
 export const AUTHORIZATION_QUERY_PARAMETERS = ["key"];
 
-/**
- * Authenticates a request by checking for valid API keys in the request headers.
- *
- * This function verifies if the request contains a valid API key in one of the
- * supported authorization headers. If no API keys are configured in the system,
- * authentication is bypassed (returns true).
- *
- * @param request - The incoming request to authenticate
- * @returns `true` if the request is authenticated (either because it contains a valid
- * API key or because authentication is disabled), `false` otherwise
- */
-export function authenticate(request: Request): boolean {
-  const apiKeys = Config.apiKeys();
-  if (!apiKeys) {
-    return true;
-  }
-
-  let apiKey: string | null = null;
-
+function extractApiKey(request: Request): string | null {
   const authorizationKey = AUTHORIZATION_KEYS.find((key) =>
     Boolean(request.headers.get(key)),
   );
@@ -35,20 +18,32 @@ export function authenticate(request: Request): boolean {
     : null;
 
   if (authorizationKey && authorizationValue) {
-    apiKey = authorizationValue.split(/\s/)[1] || authorizationValue;
-  } else {
-    const url = new URL(request.url);
-    const queryKey = AUTHORIZATION_QUERY_PARAMETERS.find((param) => {
-      return Boolean(url.searchParams.get(param));
-    });
-    if (queryKey) {
-      apiKey = url.searchParams.get(queryKey);
-    }
+    return authorizationValue.split(/\s/)[1] || authorizationValue;
+  }
+  const url = new URL(request.url);
+  const queryKey = AUTHORIZATION_QUERY_PARAMETERS.find((param) =>
+    Boolean(url.searchParams.get(param)),
+  );
+  return queryKey ? url.searchParams.get(queryKey) : null;
+}
+
+/**
+ * 异步鉴权：优先校验 keys 表，无 DB 或 keys 表无匹配时回退到 PROXY_API_KEY
+ * 未配置 PROXY_API_KEY 且无 DB 时等同于鉴权关闭（接受所有请求）
+ */
+export async function authenticate(request: Request): Promise<boolean> {
+  const envKeys = Config.apiKeys();
+  if (!envKeys) return true;
+
+  const apiKey = extractApiKey(request);
+  if (!apiKey) return false;
+
+  try {
+    const dbValid = await validateKey(apiKey);
+    if (dbValid) return true;
+  } catch {
+    // DB 不可用或 keys 表未初始化时回退到 env
   }
 
-  if (!apiKey) {
-    return false;
-  }
-
-  return apiKeys.includes(apiKey);
+  return envKeys.includes(apiKey);
 }

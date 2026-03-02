@@ -9,7 +9,7 @@ import {
   MockedFunction,
 } from "vitest";
 
-// Mock fs module
+// Mock fs 模块
 vi.mock("fs", async (importOriginal) => {
   const actual = (await importOriginal()) as any;
   return {
@@ -20,8 +20,7 @@ vi.mock("fs", async (importOriginal) => {
   };
 });
 
-// Mock readline module - note: we don't import createInterface at the top
-// since node:readline is not available in Workers environment
+// Mock readline 模块（不在顶部 import createInterface，因 Workers 环境无 node:readline）
 const mockQuestion = vi.fn();
 const mockClose = vi.fn();
 const mockCreateInterface = vi.fn(() => ({
@@ -36,7 +35,7 @@ vi.mock("readline", () => ({
 const mockExit = vi.fn();
 const originalProcessExit = process.exit;
 
-// Mock console.log and console.error
+// Mock console.log 与 console.error
 const mockConsoleLog = vi.fn();
 const mockConsoleError = vi.fn();
 const originalConsoleLog = console.log;
@@ -45,7 +44,7 @@ const originalConsoleError = console.error;
 describe("create-config.ts", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    process.exit = mockExit as never; // Type assertion to satisfy TypeScript
+    process.exit = mockExit as never; // 类型断言以满足 TypeScript
     console.log = mockConsoleLog;
     console.error = mockConsoleError;
   });
@@ -59,22 +58,22 @@ describe("create-config.ts", () => {
   it("should create config.jsonc when it does not exist and user provides valid input", async () => {
     (existsSync as MockedFunction<typeof existsSync>).mockReturnValueOnce(
       false,
-    ); // config.jsonc does not exist
-    (existsSync as MockedFunction<typeof existsSync>).mockReturnValueOnce(true); // config.example.jsonc exists
+    ); // config.jsonc 不存在
+    (existsSync as MockedFunction<typeof existsSync>).mockReturnValueOnce(true); // config.example.jsonc 存在
 
     (readFileSync as MockedFunction<typeof readFileSync>).mockReturnValueOnce(`{
       "$schema": "../schemas/config-schema.json",
       "PROXY_API_KEY": "your-proxy-api-key",
-      "OPENAI_API_KEY": "sk-...",
+      "OPENAI_API_KEY": "",
       "GEMINI_API_KEY": ["YOUR_GEMINI_API_KEY_1", "YOUR_GEMINI_API_KEY_2"],
       // --- Other API Keys ---
-      "ANTHROPIC_API_KEY": "sk-ant-...",
-      "CLOUDFLARE_ACCOUNT_ID": "your-account-id",
+      "ANTHROPIC_API_KEY": "",
+      "CLOUDFLARE_ACCOUNT_ID": "",
       "DEV": false
     }`);
 
-    // Set up mockQuestion to handle callback-based interface for this test
-    const responses = ["my-proxy-key", "sk-openai-test", "", ""];
+    // 设置 mockQuestion 以处理回调式接口
+    const responses = ["mock-proxy-key", "mock-openai-key", "", ""];
     let responseIndex = 0;
     mockQuestion.mockImplementation(
       (prompt: string, callback: (answer: string) => void) => {
@@ -83,7 +82,7 @@ describe("create-config.ts", () => {
       },
     );
 
-    // Dynamically import the script after mocks are set up
+    // Mock 就绪后动态导入脚本
     const { main } = await import("../../scripts/create-config");
     await main();
 
@@ -91,15 +90,15 @@ describe("create-config.ts", () => {
     expect(existsSync).toHaveBeenCalledWith("config.example.jsonc");
     expect(readFileSync).toHaveBeenCalledWith("config.example.jsonc", "utf8");
     expect(mockCreateInterface).toHaveBeenCalledTimes(1);
-    expect(mockQuestion).toHaveBeenCalledTimes(4); // PROXY_API_KEY, OPENAI_API_KEY, GEMINI_API_KEY, ANTHROPIC_API_KEY
+    expect(mockQuestion).toHaveBeenCalledTimes(4); // PROXY_API_KEY、OPENAI_API_KEY、GEMINI_API_KEY、ANTHROPIC_API_KEY
     expect(writeFileSync).toHaveBeenCalledTimes(1);
     expect(writeFileSync).toHaveBeenCalledWith(
       "config.jsonc",
-      expect.stringContaining('"PROXY_API_KEY": "my-proxy-key"'),
+      expect.stringContaining('"PROXY_API_KEY": "mock-proxy-key"'),
     );
     expect(writeFileSync).toHaveBeenCalledWith(
       "config.jsonc",
-      expect.stringContaining('"OPENAI_API_KEY": "sk-openai-test"'),
+      expect.stringContaining('"OPENAI_API_KEY": "mock-openai-key"'),
     );
     expect(writeFileSync).toHaveBeenCalledWith(
       "config.jsonc",
@@ -116,9 +115,9 @@ describe("create-config.ts", () => {
   });
 
   it("should exit if config.jsonc exists and user chooses not to overwrite", async () => {
-    (existsSync as MockedFunction<typeof existsSync>).mockReturnValueOnce(true); // config.jsonc exists
+    (existsSync as MockedFunction<typeof existsSync>).mockReturnValueOnce(true); // config.jsonc 已存在
 
-    // Set up mockQuestion to handle callback-based interface for this test
+    // 设置 mockQuestion 以处理回调式接口
     const responses = ["n"];
     let responseIndex = 0;
     mockQuestion.mockImplementation(
@@ -143,10 +142,10 @@ describe("create-config.ts", () => {
   it("should exit with error if config.example.jsonc is not found", async () => {
     (existsSync as MockedFunction<typeof existsSync>).mockReturnValueOnce(
       false,
-    ); // config.jsonc does not exist
+    ); // config.jsonc 不存在
     (existsSync as MockedFunction<typeof existsSync>).mockReturnValueOnce(
       false,
-    ); // config.example.jsonc does not exist
+    ); // config.example.jsonc 不存在
 
     const { main } = await import("../../scripts/create-config");
     await main();
@@ -161,16 +160,16 @@ describe("create-config.ts", () => {
   it("should prompt again for required fields if input is empty", async () => {
     (existsSync as MockedFunction<typeof existsSync>).mockReturnValueOnce(
       false,
-    ); // config.jsonc does not exist
-    (existsSync as MockedFunction<typeof existsSync>).mockReturnValueOnce(true); // config.example.jsonc exists
+    ); // config.jsonc 不存在
+    (existsSync as MockedFunction<typeof existsSync>).mockReturnValueOnce(true); // config.example.jsonc 存在
 
     (readFileSync as MockedFunction<typeof readFileSync>).mockReturnValueOnce(`{
       "$schema": "../schemas/config-schema.json",
       "PROXY_API_KEY": "your-proxy-api-key"
     }`);
 
-    // Set up mockQuestion to handle callback-based interface for this test
-    const responses = ["", "valid-proxy-key"]; // First try: empty, Second try: valid
+    // 设置 mockQuestion 以处理回调式接口
+    const responses = ["", "valid-proxy-key"]; // 第一次空，第二次有效
     let responseIndex = 0;
     mockQuestion.mockImplementation(
       (prompt: string, callback: (answer: string) => void) => {
@@ -182,7 +181,7 @@ describe("create-config.ts", () => {
     const { main } = await import("../../scripts/create-config");
     await main();
 
-    expect(mockQuestion).toHaveBeenCalledTimes(2); // Prompted twice for PROXY_API_KEY
+    expect(mockQuestion).toHaveBeenCalledTimes(2); // PROXY_API_KEY 提示两次
     expect(mockConsoleLog).toHaveBeenCalledWith(
       "This field is required. Please enter a value.",
     );
@@ -196,8 +195,8 @@ describe("create-config.ts", () => {
   it("should handle JSON array input correctly", async () => {
     (existsSync as MockedFunction<typeof existsSync>).mockReturnValueOnce(
       false,
-    ); // config.jsonc does not exist
-    (existsSync as MockedFunction<typeof existsSync>).mockReturnValueOnce(true); // config.example.jsonc exists
+    ); // config.jsonc 不存在
+    (existsSync as MockedFunction<typeof existsSync>).mockReturnValueOnce(true); // config.example.jsonc 存在
 
     (readFileSync as MockedFunction<typeof readFileSync>).mockReturnValueOnce(`{
       "$schema": "../schemas/config-schema.json",
@@ -205,8 +204,8 @@ describe("create-config.ts", () => {
       "GEMINI_API_KEY": ["YOUR_GEMINI_API_KEY_1"]
     }`);
 
-    // Set up mockQuestion to handle callback-based interface for this test
-    const responses = ["my-proxy-key", '["key1", "key2"]'];
+    // 设置 mockQuestion 以处理回调式接口
+    const responses = ["mock-proxy-key", '["key1", "key2"]']; // 数组输入
     let responseIndex = 0;
     mockQuestion.mockImplementation(
       (prompt: string, callback: (answer: string) => void) => {
@@ -228,18 +227,18 @@ describe("create-config.ts", () => {
   it("should warn if no API keys are configured", async () => {
     (existsSync as MockedFunction<typeof existsSync>).mockReturnValueOnce(
       false,
-    ); // config.jsonc does not exist
-    (existsSync as MockedFunction<typeof existsSync>).mockReturnValueOnce(true); // config.example.jsonc exists
+    ); // config.jsonc 不存在
+    (existsSync as MockedFunction<typeof existsSync>).mockReturnValueOnce(true); // config.example.jsonc 存在
 
     (readFileSync as MockedFunction<typeof readFileSync>).mockReturnValueOnce(`{
       "$schema": "../schemas/config-schema.json",
       "PROXY_API_KEY": "your-proxy-api-key",
-      "OPENAI_API_KEY": "sk-...",
+      "OPENAI_API_KEY": "",
       "GEMINI_API_KEY": ["YOUR_GEMINI_API_KEY_1"]
     }`);
 
-    // Set up mockQuestion to handle callback-based interface for this test
-    const responses = ["my-proxy-key", "", ""]; // Only PROXY_API_KEY is set
+    // 设置 mockQuestion 以处理回调式接口
+    const responses = ["mock-proxy-key", "", ""]; // 仅设置 PROXY_API_KEY
     let responseIndex = 0;
     mockQuestion.mockImplementation(
       (prompt: string, callback: (answer: string) => void) => {

@@ -6,7 +6,7 @@ import {
 } from "./openai/types";
 
 export class ProviderBase {
-  // --- Configuration Properties ---
+  // --- 配置属性 ---
   readonly apiKeyName: keyof Env | undefined = undefined;
   readonly baseUrlProp: string = "https://example.com";
   readonly pathnamePrefixProp: string = "";
@@ -39,7 +39,7 @@ export class ProviderBase {
       return await Secrets.getNext(this.apiKeyName);
     }
 
-    // Fallback for providers without apiKeyName (like CustomOpenAI will override this)
+    // 无 apiKeyName 的 provider 回退（如 CustomOpenAI 会覆盖）
     return 0;
   }
 
@@ -51,7 +51,7 @@ export class ProviderBase {
     return fetch2(...(await this.buildRequest(pathname, init, apiKeyIndex)));
   }
 
-  // --- URL & Header Construction ---
+  // --- URL 与 Header 构建 ---
   baseUrl(): string {
     return this.baseUrlProp;
   }
@@ -88,7 +88,7 @@ export class ProviderBase {
     };
   }
 
-  // --- OpenAI Compatible API Methods ---
+  // --- OpenAI 兼容 API 方法 ---
   async buildChatCompletionsRequest({
     body,
     headers = {},
@@ -142,7 +142,7 @@ export class ProviderBase {
     return undefined;
   }
 
-  // --- Constants & Metadata ---
+  // --- 常量与元数据 ---
   readonly CHAT_COMPLETIONS_SUPPORTED_PARAMETERS: (keyof OpenAIChatCompletionsRequestBody)[] =
     [
       "messages",

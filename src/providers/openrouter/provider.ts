@@ -13,7 +13,7 @@ export class OpenRouter extends OpenAICompatibleProvider {
   readonly apiKeyName: keyof Env = "OPENROUTER_API_KEY";
   readonly baseUrlProp: string = "https://openrouter.ai/api";
 
-  // Convert model list to OpenAI format
+  // 将模型列表转为 OpenAI 格式
   modelsToOpenAIFormat(
     data: OpenRouterModelsListResponseBody,
   ): OpenAIModelsListResponseBody {

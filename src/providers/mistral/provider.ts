@@ -13,7 +13,7 @@ export class Mistral extends OpenAICompatibleProvider {
   readonly apiKeyName: keyof Env = "MISTRAL_API_KEY";
   readonly baseUrlProp: string = "https://api.mistral.ai";
 
-  // Convert model list to OpenAI format
+  // 将模型列表转为 OpenAI 格式
   modelsToOpenAIFormat(
     data: MistralModelsListResponseBody,
   ): OpenAIModelsListResponseBody {

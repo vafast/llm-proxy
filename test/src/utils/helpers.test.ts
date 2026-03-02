@@ -39,8 +39,8 @@ describe("shuffleArray", () => {
       40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50,
     ];
     const result = shuffleArray(array);
-    expect(result).not.toEqual(array); // It's possible to get the same array, but very unlikely
-    expect(result.sort()).toEqual(array.sort()); // Ensure all elements are still present
+    expect(result).not.toEqual(array); // 可能相同但概率极低
+    expect(result.sort()).toEqual(array.sort()); // 确保元素完整
   });
 });
 
@@ -132,7 +132,7 @@ describe("cleanPathname", () => {
   });
 
   it("should remove authorization query parameters (multiple auth params)", () => {
-    // Current only "key" is in AUTHORIZATION_QUERY_PARAMETERS, but test the logic
+    // 当前仅 "key" 在 AUTHORIZATION_QUERY_PARAMETERS，测试逻辑
     const pathname = "/v1/chat/completions?key=val&other=123&key=val2";
     const result = cleanPathname(pathname);
     expect(result).toBe("/v1/chat/completions?other=123");
@@ -161,7 +161,7 @@ describe("withTimeout", () => {
 
     try {
       const abortController = new AbortController();
-      const hangingPromise = new Promise<string>(() => {}); // Never resolves
+      const hangingPromise = new Promise<string>(() => {}); // 永不 resolve
 
       const timeoutPromise = withTimeout(
         hangingPromise,
@@ -170,7 +170,7 @@ describe("withTimeout", () => {
         "test-provider",
       );
 
-      // Advance time past the timeout
+      // 推进时间超过超时
       vi.advanceTimersByTime(1000);
       vi.runAllTimers();
 
@@ -202,7 +202,7 @@ describe("withTimeout", () => {
 
       await withTimeout(promise, abortController, 1000, "test");
 
-      // Verify that no timeout callbacks are pending
+      // 验证无超时回调挂起
       expect(vi.getTimerCount()).toBe(0);
     } finally {
       vi.useRealTimers();

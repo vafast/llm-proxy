@@ -1,16 +1,12 @@
-import { CloudflareAIGateway } from "../ai_gateway";
 import { getAllProviders } from "../providers";
 import { CustomOpenAI } from "../providers/custom-openai";
 import { ProviderBase, ProviderNotSupportedError } from "../providers/provider";
 import { Config } from "../utils/config";
 import { Environments } from "../utils/environments";
-import { fetch2 } from "../utils/helpers";
 import { Secrets } from "../utils/secrets";
 
 /**
- * Masks an API key, showing only the last 3 characters.
- * @param key The API key to mask.
- * @returns The masked API key.
+ * 脱敏 API Key，仅显示最后 3 位。
  */
 function maskApiKey(key: string): string {
   if (key.length <= 3) {
@@ -20,45 +16,18 @@ function maskApiKey(key: string): string {
 }
 
 /**
- * Checks connectivity for a specific API key of a provider.
- * @param instance The provider instance.
- * @param providerName The name of the provider.
- * @param apiKeyIndex The index of the API key.
- * @param aiGateway The AI Gateway instance.
- * @returns Connectivity status.
+ * 检查某 provider 某 API Key 的连通性。
  */
 async function checkConnectivity(
   instance: ProviderBase,
   providerName: string,
   apiKeyIndex: number,
-  aiGateway?: CloudflareAIGateway,
 ): Promise<"valid" | "invalid" | "unknown"> {
   if (!instance.modelsPath) {
     return "unknown";
   }
 
   try {
-    if (aiGateway && CloudflareAIGateway.isSupportedProvider(providerName)) {
-      const [requestInfo, requestInit] = aiGateway.buildProviderEndpointRequest(
-        {
-          provider: providerName as any,
-          method: "GET",
-          path: instance.modelsPath,
-          headers: await instance.headers(apiKeyIndex),
-        },
-      );
-
-      const response = await fetch2(requestInfo, requestInit);
-
-      if (response.ok) {
-        return "valid";
-      } else if (response.status === 401 || response.status === 403) {
-        return "invalid";
-      } else {
-        return "unknown";
-      }
-    }
-
     const [requestInfo, requestInit] =
       await instance.buildModelsRequest(apiKeyIndex);
 
@@ -84,11 +53,10 @@ async function checkConnectivity(
   }
 }
 
-export async function status(aiGateway?: CloudflareAIGateway) {
+export async function status() {
   const config = {
     DEV: Config.isDevelopment(),
     DEFAULT_MODEL: Config.defaultModel() || null,
-    AI_GATEWAY: Config.aiGateway(),
     GLOBAL_ROUND_ROBIN: Config.isGlobalRoundRobinEnabled(),
   };
 
@@ -122,7 +90,6 @@ export async function status(aiGateway?: CloudflareAIGateway) {
           instance,
           providerName,
           apiKeyIndex,
-          aiGateway,
         ),
       })),
     );

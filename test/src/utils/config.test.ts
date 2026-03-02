@@ -111,56 +111,6 @@ describe("Config", () => {
     });
   });
 
-  describe("aiGateway", () => {
-    it("should return AI Gateway configuration", () => {
-      vi.mocked(Environments.get)
-        .mockReturnValueOnce("test-account-id")
-        .mockReturnValueOnce("test-gateway-name")
-        .mockReturnValueOnce("test-token");
-
-      const result = Config.aiGateway();
-
-      expect(result).toEqual({
-        accountId: "test-account-id",
-        name: "test-gateway-name",
-        token: "test-token",
-      });
-      expect(Environments.get).toHaveBeenCalledWith(
-        "CLOUDFLARE_ACCOUNT_ID",
-        false,
-      );
-      expect(Environments.get).toHaveBeenCalledWith("AI_GATEWAY_NAME", false);
-      expect(Environments.get).toHaveBeenCalledWith("CF_AIG_TOKEN", false);
-    });
-
-    it("should return configuration with undefined values when not set", () => {
-      vi.mocked(Environments.get).mockReturnValue(undefined);
-
-      const result = Config.aiGateway();
-
-      expect(result).toEqual({
-        accountId: undefined,
-        name: undefined,
-        token: undefined,
-      });
-    });
-
-    it("should handle mixed defined and undefined values", () => {
-      vi.mocked(Environments.get)
-        .mockReturnValueOnce("test-account-id")
-        .mockReturnValueOnce(undefined)
-        .mockReturnValueOnce("test-token");
-
-      const result = Config.aiGateway();
-
-      expect(result).toEqual({
-        accountId: "test-account-id",
-        name: undefined,
-        token: "test-token",
-      });
-    });
-  });
-
   describe("defaultModel", () => {
     it("should return default model when set", () => {
       vi.mocked(Environments.get).mockReturnValue("openai/gpt-4");

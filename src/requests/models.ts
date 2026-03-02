@@ -1,15 +1,13 @@
-import { CloudflareAIGateway } from "../ai_gateway";
 import { getAllProviders } from "../providers";
 import { OpenAIModelsListResponseBody } from "../providers/openai/types";
 import { ProviderNotSupportedError } from "../providers/provider";
 import { Environments } from "../utils/environments";
-import { fetch2, withTimeout } from "../utils/helpers";
+import { withTimeout } from "../utils/helpers";
 import { Secrets } from "../utils/secrets";
 
 const PROVIDER_FETCH_TIMEOUT_MS = 5000;
 
 export async function models(request: Request) {
-  const aiGateway = request.aiGateway;
   const contextApiKeyIndex = request.apiKeyIndex;
 
   const env = Environments.all();
@@ -38,61 +36,24 @@ export async function models(request: Request) {
       const [requestInfo, requestInit] =
         await providerInstance.buildModelsRequest(apiKeyIndex);
 
-      let models: OpenAIModelsListResponseBody;
-      if (aiGateway && CloudflareAIGateway.isSupportedProvider(providerName)) {
-        const abortController = new AbortController();
-        const [gatewayUrl, gatewayInit] =
-          aiGateway.buildProviderEndpointRequest({
-            provider: providerName,
-            method: requestInit.method,
-            path: requestInfo,
-            headers: await providerInstance.headers(apiKeyIndex),
-          });
-
-        const fetchPromise = fetch2(gatewayUrl, {
-          ...gatewayInit,
-          signal: abortController.signal,
-        }).then(async (response) => {
+      const abortController = new AbortController();
+      const fetchPromise = providerInstance
+        .fetch(
+          requestInfo,
+          { ...requestInit, signal: abortController.signal },
+          apiKeyIndex,
+        )
+        .then(async (response) => {
           const responseJson = await response.json();
           return providerInstance.modelsToOpenAIFormat(responseJson);
         });
 
-        try {
-          models = await withTimeout(
-            fetchPromise,
-            abortController,
-            PROVIDER_FETCH_TIMEOUT_MS,
-            providerName,
-          );
-        } catch (error) {
-          throw error;
-        }
-      } else {
-        const abortController = new AbortController();
-        const fetchPromise = providerInstance
-          .fetch(
-            requestInfo,
-            { ...requestInit, signal: abortController.signal },
-            apiKeyIndex,
-          )
-          .then(async (response) => {
-            const responseJson = await response.json();
-            return providerInstance.modelsToOpenAIFormat(responseJson);
-          });
-
-        try {
-          models = await withTimeout(
-            fetchPromise,
-            abortController,
-            PROVIDER_FETCH_TIMEOUT_MS,
-            providerName,
-          );
-        } catch (error) {
-          throw error;
-        }
-      }
-
-      return models;
+      return withTimeout(
+        fetchPromise,
+        abortController,
+        PROVIDER_FETCH_TIMEOUT_MS,
+        providerName,
+      );
     },
   );
 

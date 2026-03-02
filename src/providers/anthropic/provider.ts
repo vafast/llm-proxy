@@ -23,7 +23,7 @@ export class Anthropic extends ProviderBase {
     };
   }
 
-  // Convert model list to OpenAI format
+  // 将模型列表转为 OpenAI 格式
   modelsToOpenAIFormat(
     data: AnthropicModelsListResponseBody,
   ): OpenAIModelsListResponseBody {

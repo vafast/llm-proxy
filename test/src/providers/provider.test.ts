@@ -10,7 +10,7 @@ describe("ProviderBase", () => {
 
   beforeEach(() => {
     providerBase = new ProviderBase();
-    // Mock methods that would normally be implemented by subclasses or depend on Secrets
+    // Mock 子类实现或依赖 Secrets 的方法
     vi.spyOn(providerBase, "headers").mockResolvedValue({
       "Content-Type": "application/json",
     });

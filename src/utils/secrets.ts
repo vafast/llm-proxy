@@ -3,13 +3,13 @@ import { Environments } from "./environments";
 import { shuffleArray } from "./helpers";
 import { randomInt } from "node:crypto";
 
-// Returns a cryptographically secure random integer in the range [0, max - 1].
+// 返回 [0, max-1] 范围内的密码学安全随机整数。
 export function getSecureRandomIndex(max: number): number {
   if (max <= 0) {
     throw new Error("max must be greater than 0");
   }
 
-  // Browser / Cloudflare Workers / environments with Web Crypto
+  // 浏览器 / Cloudflare Workers / 支持 Web Crypto 的环境
   if (typeof crypto !== "undefined" && "getRandomValues" in crypto) {
     const array = new Uint32Array(1);
     const maxUint32 = 0xffffffff;
@@ -24,23 +24,23 @@ export function getSecureRandomIndex(max: number): number {
     return value % max;
   }
 
-  // Node.js fallback using built-in crypto.randomInt
+  // Node.js 回退，使用内置 crypto.randomInt
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const nodeCrypto = require("crypto") as typeof import("crypto");
   return nodeCrypto.randomInt(0, max);
 }
 
 /**
- * A utility class for managing and retrieving secrets from environment variables.
- * Provides functionality to access all values for a key or get a single value with optional rotation.
+ * 环境变量密钥管理工具类。
+ * 支持获取某 key 的全部值或按索引获取单个值，可选轮询。
  */
 export class Secrets {
   /**
-   * Retrieves all values for a specified environment key.
+   * 获取指定环境变量的全部值。
    *
-   * @param keyName - The name of the environment variable to retrieve
-   * @param shuffle - Whether to shuffle the array of values (default: false)
-   * @returns An array of string values, or an empty array if the key doesn't exist
+   * @param keyName - 环境变量名
+   * @param shuffle - 是否打乱顺序（默认 false）
+   * @returns 字符串数组，不存在则返回空数组
    */
   static getAll(keyName: keyof Env, shuffle: boolean = false): string[] {
     const value = Environments.get(keyName);
@@ -64,11 +64,11 @@ export class Secrets {
   }
 
   /**
-   * Retrieves a single value for a specified environment key at the given apiKeyIndex.
+   * 按 apiKeyIndex 获取指定环境变量的单个值。
    *
-   * @param keyName - The name of the environment variable to retrieve
-   * @param apiKeyIndex - The apiKeyIndex of the value to retrieve (default: 0)
-   * @returns A single string value for the specified key and apiKeyIndex
+   * @param keyName - 环境变量名
+   * @param apiKeyIndex - 取值索引（默认 0）
+   * @returns 对应索引的字符串值
    */
   static get(keyName: keyof Env, apiKeyIndex: number = 0): string {
     const allKeys = this.getAll(keyName);
@@ -79,11 +79,11 @@ export class Secrets {
   }
 
   /**
-   * Determines the next index to use for a specified identifier and length, considering global round-robin configuration.
+   * 根据全局轮询配置，确定下次使用的索引。
    *
-   * @param identifier - A unique identifier for the key rotation (e.g., "GEMINI_API_KEY" or a custom endpoint name)
-   * @param length - The number of available keys
-   * @returns A Promise that resolves to the next index (0 to length - 1)
+   * @param identifier - 轮询标识（如 "GEMINI_API_KEY" 或自定义端点名）
+   * @param length - 可用 key 数量
+   * @returns 下次使用的索引 (0 到 length-1)
    */
   static async getNextIndex(
     identifier: string,
@@ -102,10 +102,10 @@ export class Secrets {
   }
 
   /**
-   * Determines the next index to use for a specified key name, considering global round-robin configuration.
+   * 根据 key 名和全局轮询配置，确定下次使用的索引。
    *
-   * @param keyName - The name of the environment variable
-   * @returns A Promise that resolves to the next index (0 to length - 1)
+   * @param keyName - 环境变量名
+   * @returns 下次使用的索引 (0 到 length-1)
    */
   static async getNext(keyName: keyof Env): Promise<number> {
     const length = this.getAll(keyName).length;
@@ -113,11 +113,11 @@ export class Secrets {
   }
 
   /**
-   * Resolves a selection (number or range) to a single apiKeyIndex.
+   * 将选择（数字或范围）解析为单个 apiKeyIndex。
    *
-   * @param selection - The selection from MiddlewareContext
-   * @param length - The total number of available API keys
-   * @returns A single index within the range [0, length-1]
+   * @param selection - 来自 MiddlewareContext 的选择
+   * @param length - 可用 API Key 总数
+   * @returns [0, length-1] 范围内的索引
    */
   static resolveApiKeyIndex(
     selection: number | { start?: number; end?: number },
@@ -137,7 +137,7 @@ export class Secrets {
       return start;
     }
 
-    // Random choice within the range [start, end]
+    // 在 [start, end] 范围内随机选择
     return randomInt(start, end + 1);
   }
 }

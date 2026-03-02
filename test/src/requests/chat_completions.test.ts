@@ -1,5 +1,4 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { CloudflareAIGateway } from "~/src/ai_gateway";
 import { Providers } from "~/src/providers";
 import { getProvider } from "~/src/providers";
 import { chatCompletions } from "~/src/requests/chat_completions";
@@ -7,7 +6,6 @@ import { Config } from "~/src/utils/config";
 import * as helpers from "~/src/utils/helpers";
 import { Secrets } from "~/src/utils/secrets";
 
-vi.mock("~/src/ai_gateway");
 vi.mock("~/src/providers", async () => {
   const actual =
     await vi.importActual<typeof import("~/src/providers")>("~/src/providers");
@@ -29,14 +27,9 @@ describe("chatCompletions", () => {
     getNextApiKeyIndex: vi.fn().mockResolvedValue(0),
   };
 
-  const mockAIGateway = {
-    buildChatCompletionsRequest: vi.fn(),
-  };
-
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(helpers.fetch2).mockResolvedValue(new Response());
-    vi.mocked(CloudflareAIGateway.isSupportedProvider).mockReturnValue(true);
     Providers.openai = vi.fn().mockImplementation(() => mockProviderClass);
     vi.mocked(Config.defaultModel).mockReturnValue("openai/gpt-4");
     vi.mocked(Secrets.getAll).mockReturnValue(["test-key"]);
@@ -108,19 +101,18 @@ describe("chatCompletions", () => {
     });
   });
 
-  it("should return 400 for invalid body", async () => {
+  it("should throw 400 for invalid body", async () => {
     const request = new Request("https://example.com/chat/completions", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
     });
 
-    // 非对象类型的 body 会触发 400
-    const result = await chatCompletions(request, "invalid json");
-
-    expect(result).toEqual({ data: { error: "Invalid request." }, status: 400 });
+    await expect(chatCompletions(request, "invalid json")).rejects.toThrow(
+      "Invalid request.",
+    );
   });
 
-  it("should return 400 for invalid provider", async () => {
+  it("should throw 400 for invalid provider", async () => {
     const requestBody = {
       model: "invalid-provider/model",
       messages: [{ role: "user", content: "Hello" }],
@@ -131,49 +123,9 @@ describe("chatCompletions", () => {
       headers: { "Content-Type": "application/json" },
     });
 
-    const result = await chatCompletions(request, requestBody);
-
-    expect(result).toEqual({ data: { error: "Invalid provider." }, status: 400 });
-  });
-
-  it("should use AI Gateway when available and provider supported", async () => {
-    const requestBody = {
-      model: "openai/gpt-4",
-      messages: [{ role: "user", content: "Hello" }],
-    };
-
-    const request = new Request("https://example.com/chat/completions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-    });
-    // aiGateway 通过 request 扩展属性传入
-    (request as any).aiGateway = mockAIGateway;
-
-    mockProviderClass.buildChatCompletionsRequest.mockReturnValue([
-      "/chat/completions",
-      {
-        method: "POST",
-        body: JSON.stringify({ ...requestBody, model: "gpt-4" }),
-      },
-    ]);
-    mockAIGateway.buildChatCompletionsRequest.mockReturnValue([
-      "https://gateway.ai.cloudflare.com/v1/account/gateway",
-      { method: "POST", body: JSON.stringify([]) },
-    ]);
-
-    await chatCompletions(request, requestBody);
-
-    expect(CloudflareAIGateway.isSupportedProvider).toHaveBeenCalledWith(
-      "openai",
-      true,
+    await expect(chatCompletions(request, requestBody)).rejects.toThrow(
+      "Invalid provider.",
     );
-    expect(mockAIGateway.buildChatCompletionsRequest).toHaveBeenCalledWith({
-      provider: "openai",
-      body: JSON.stringify({ ...requestBody, model: "gpt-4" }),
-      headers: expect.any(Object),
-      apiKeyName: "OPENAI_API_KEY",
-    });
-    expect(helpers.fetch2).toHaveBeenCalled();
   });
 
   it("should remove Authorization header", async () => {

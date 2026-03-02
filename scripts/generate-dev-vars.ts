@@ -29,15 +29,15 @@ export interface GenerationOptions {
 }
 
 /**
- * Validate environment name
+ * 校验环境名
  */
 export function validateEnvironmentName(env: string): boolean {
-  // Allow alphanumeric characters, hyphens, and underscores
+  // 允许字母、数字、连字符、下划线
   return /^[a-zA-Z0-9_-]+$/.test(env);
 }
 
 /**
- * Get file paths for given environment
+ * 获取指定环境的文件路径
  */
 export function getFilePaths(
   rootDir: string,
@@ -57,7 +57,7 @@ export function getFilePaths(
 }
 
 /**
- * Parse command line arguments
+ * 解析命令行参数
  */
 export function parseArgs(argv: string[] = process.argv.slice(2)): CliArgs {
   const args: CliArgs = {};
@@ -69,7 +69,7 @@ export function parseArgs(argv: string[] = process.argv.slice(2)): CliArgs {
         throw new Error("--env option requires a value");
       }
       args.env = argv[i + 1];
-      i++; // Skip next argument as it's the value
+      i++; // 跳过下一参数（为值）
     } else if (arg === "--help" || arg === "-h") {
       args.help = true;
     } else if (arg.startsWith("-")) {
@@ -83,7 +83,7 @@ export function parseArgs(argv: string[] = process.argv.slice(2)): CliArgs {
 }
 
 /**
- * Show help message
+ * 显示帮助信息
  */
 export function showHelp(): string {
   return `
@@ -101,33 +101,30 @@ Examples:
   npm run generate-dev-vars -- --env staging   # Generate .dev.vars.staging from config.staging.jsonc
   npm run generate-dev-vars -- --env prod      # Generate .dev.vars.prod from config.prod.jsonc
 
-Note: .dev.vars files contain sensitive authentication credentials for development environments.
+说明：.dev.vars 文件包含开发环境的敏感认证信息。
 `;
 }
 
 /**
- * Remove JSON comments and parse JSON with comments (JSONC)
+ * 移除 JSON 注释并解析 JSONC
  */
 export function parseJsonc(content: string): Record<string, any> {
-  // Use a regex that matches both strings and comments.
-  // When a string is matched, we keep it as is.
-  // When a comment is matched, we remove it.
+  // 正则匹配字符串与注释；匹配到字符串保留，匹配到注释移除
   const regex = /"(?:[^"\\]|\\.)*"|(\/\/.*$|\/\*[\s\S]*?\*\/)/gm;
 
   const withoutComments = content.replace(regex, (match, comment) => {
-    // If we matched a comment (capture group 1), return an empty string
-    // Otherwise, we matched a string, so return it as is
+    // 匹配到注释（捕获组 1）返回空串，否则返回原字符串
     return comment ? "" : match;
   });
 
-  // Remove trailing commas
+  // 移除尾逗号
   const withoutTrailingCommas = withoutComments.replace(/,(\s*[}\]])/g, "$1");
 
   return JSON.parse(withoutTrailingCommas);
 }
 
 /**
- * Convert a value to environment variable format
+ * 将值转为环境变量格式
  */
 export function valueToEnvVar(value: any): string {
   if (value === null || value === undefined) {
@@ -135,7 +132,7 @@ export function valueToEnvVar(value: any): string {
   }
 
   if (Array.isArray(value)) {
-    // For arrays, stringify the entire array
+    // 数组整体序列化
     return JSON.stringify(value);
   }
 
@@ -143,7 +140,7 @@ export function valueToEnvVar(value: any): string {
 }
 
 /**
- * Convert JSON config to .dev.vars format
+ * 将 JSON 配置转为 .dev.vars 格式
  */
 export function configToDevVars(
   config: Record<string, any>,
@@ -151,12 +148,12 @@ export function configToDevVars(
 ): string {
   const lines: string[] = [];
 
-  // Add header comment
+  // 添加头部注释
   lines.push(`# Environment Variables${env ? ` (${env})` : ""}`);
   lines.push(`# Generated from config${env ? `.${env}` : ""}.jsonc`);
   lines.push("");
 
-  // Skip $schema field
+  // 跳过 $schema 字段
   for (const [key, value] of Object.entries(config)) {
     if (key === "$schema") continue;
 
@@ -168,7 +165,7 @@ export function configToDevVars(
 }
 
 /**
- * Generate a single dev vars file
+ * 生成单个 dev vars 文件
  */
 export function generateSingleDevVarsFile(
   configPath: string,
@@ -208,14 +205,14 @@ export function generateSingleDevVarsFile(
 }
 
 /**
- * Generate dev vars files based on configuration
+ * 根据配置生成 dev vars 文件
  */
 export function generateDevVars(
   rootDir: string,
   env?: string,
   fsOps: FileSystemOperations = fs,
 ): GenerationResult {
-  // Validate environment name if provided
+  // 若提供则校验环境名
   if (env && !validateEnvironmentName(env)) {
     return {
       success: false,
@@ -234,7 +231,7 @@ export function generateDevVars(
 }
 
 /**
- * Main function to generate .dev.vars files
+ * 生成 .dev.vars 的主函数
  */
 function main(): void {
   let args: CliArgs;
@@ -271,7 +268,7 @@ function main(): void {
   }
 }
 
-// Run the script if called directly
+// 直接执行时运行脚本
 if (import.meta.url === `file://${process.argv[1]}`) {
   main();
 }

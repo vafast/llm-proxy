@@ -1,7 +1,7 @@
 import { describe, test, expect, beforeEach, vi } from "vitest";
 import { Environments } from "~/src/utils/environments";
 
-// Mock the process.env
+// Mock process.env
 declare global {
   interface Env {
     TEST_VAR: string;

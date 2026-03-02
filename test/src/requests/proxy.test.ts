@@ -13,7 +13,6 @@ vi.mock("~/src/providers", async () => {
     getProvider: vi.fn(),
   };
 });
-vi.mock("~/src/providers/ai_gateway");
 vi.mock("~/src/utils/helpers");
 vi.mock("~/src/utils/environments");
 vi.mock("~/src/utils/secrets");
@@ -51,7 +50,7 @@ describe("proxy", () => {
       headers: new Headers(),
     });
 
-    // 新签名：proxy(request, providerName, pathname, body?)
+    // 签名：proxy(request, providerName, pathname, body?)
     await proxy(mockRequest, providerName, "/test/path");
 
     expect(mockProviderClass.fetch).toHaveBeenCalledWith(

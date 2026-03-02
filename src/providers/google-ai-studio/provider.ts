@@ -69,7 +69,7 @@ export class GoogleAiStudio extends ProviderBase {
     }
   }
 
-  // Convert model list to OpenAI format
+  // 将模型列表转为 OpenAI 格式
   modelsToOpenAIFormat(
     data: GoogleAiStudioModelsListResponseBody,
   ): OpenAIModelsListResponseBody {

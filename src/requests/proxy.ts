@@ -1,8 +1,6 @@
-import { CloudflareAIGateway } from "../ai_gateway";
 import { getProvider } from "../providers";
 import { Environments } from "../utils/environments";
 import { NotFoundError } from "../utils/error";
-import { fetch2 } from "../utils/helpers";
 import { Secrets } from "../utils/secrets";
 
 /**
@@ -17,7 +15,6 @@ export async function proxy(
   pathname: string,
   body?: unknown,
 ) {
-  const aiGateway = request.aiGateway;
   const contextApiKeyIndex = request.apiKeyIndex;
 
   const env = Environments.all();
@@ -41,21 +38,6 @@ export async function proxy(
         ? body
         : JSON.stringify(body)
       : null;
-
-  if (aiGateway && CloudflareAIGateway.isSupportedProvider(providerName)) {
-    return fetch2(
-      ...aiGateway.buildProviderEndpointRequest({
-        provider: providerName,
-        method: request.method,
-        path: pathname,
-        body: forwardBody,
-        headers: {
-          ...(await providerInstance.headers(apiKeyIndex)),
-          ...Object.fromEntries(request.headers.entries()),
-        },
-      }),
-    );
-  }
 
   return providerInstance.fetch(
     pathname,

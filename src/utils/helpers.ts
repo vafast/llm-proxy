@@ -2,12 +2,12 @@ import { AUTHORIZATION_QUERY_PARAMETERS } from "./authorization";
 import { randomInt } from "node:crypto";
 
 export function maskUrl(url: string): string {
-  // Constants for masking behavior
-  const MASK_THRESHOLD = 10; // Minimum length to show prefix
-  const MASK_PREFIX_LENGTH = 3; // Number of characters to show before masking
+  // 脱敏相关常量
+  const MASK_THRESHOLD = 10; // 显示前缀的最小长度
+  const MASK_PREFIX_LENGTH = 3; // 脱敏前保留的字符数
   const MASK_PLACEHOLDER = "***";
 
-  // List of sensitive parameter names that should be masked
+  // 需脱敏的敏感参数名
   const sensitiveParams = [
     "apikey",
     "api_key",
@@ -25,7 +25,7 @@ export function maskUrl(url: string): string {
   try {
     const urlObj = new URL(url);
 
-    // Mask only sensitive query parameters
+    // 仅脱敏敏感查询参数
     if (urlObj.search) {
       const params = new URLSearchParams(urlObj.search);
       const maskedParams = new URLSearchParams();
@@ -35,7 +35,7 @@ export function maskUrl(url: string): string {
         const isSensitive = sensitiveParams.some((param) => keyLower === param);
 
         if (isSensitive) {
-          // Mask the value, keeping prefix for longer values
+          // 脱敏值，较长时保留前缀
           if (value.length > MASK_THRESHOLD) {
             maskedParams.set(
               key,
@@ -47,7 +47,7 @@ export function maskUrl(url: string): string {
             maskedParams.set(key, value);
           }
         } else {
-          // Keep non-sensitive parameters as-is
+          // 非敏感参数保持原样
           maskedParams.set(key, value);
         }
       }
@@ -57,7 +57,7 @@ export function maskUrl(url: string): string {
 
     return urlObj.toString();
   } catch {
-    // If URL parsing fails, return masked version
+    // URL 解析失败时返回脱敏版本
     const MASK_PLACEHOLDER = "***";
     return (
       url.split("?")[0] + (url.includes("?") ? `?${MASK_PLACEHOLDER}` : "")
@@ -127,37 +127,34 @@ export function formatString(
 export function cleanPathname(pathname: string): string {
   let cleanedPathname = pathname;
 
-  // Remove authorization query parameters using regex
+  // 用正则移除鉴权相关查询参数
   AUTHORIZATION_QUERY_PARAMETERS.forEach((param) => {
-    // Pattern to match: &key=value or ?key=value
+    // 匹配 &key=value 或 ?key=value
     const paramPattern = new RegExp(`[?&]${param}=([^&]*)`, "g");
-    cleanedPathname = cleanedPathname.replace(
+    cleanedPathname =     cleanedPathname.replace(
       paramPattern,
       (match, value, offset, str) => {
-        // If it's the first parameter (?key=value), replace with ? if there are other params
-        if (match.startsWith("?")) {
-          // Find the next parameter after this one
+        // 首个参数 (?key=value)：若有其他参数则保留 ?
+        if (match.startsWith("?") && typeof str === "string") {
           const nextAmpersand = str.indexOf("&", offset + match.length);
           if (nextAmpersand !== -1) {
             return "?";
-          } else {
-            return "";
           }
+          return "";
         }
-        // If it's not the first parameter (&key=value), just remove it
         return "";
       },
     );
   });
 
-  // Clean up any invalid query string formats like ?&param=value
+  // 清理无效查询格式如 ?&param=value
   return cleanedPathname.replace(/\?\&/, "?");
 }
 
 /**
- * Wraps a promise with a timeout using a single timer and AbortController.
- * Aborts the fetch request on timeout and rejects immediately with TimeoutError.
- * Ensures the timer is always cleared and the Promise settles within timeoutMs.
+ * 使用单定时器和 AbortController 包装 Promise 超时。
+ * 超时时中止 fetch 并立即 reject TimeoutError。
+ * 确保定时器被清理且 Promise 在 timeoutMs 内完成。
  */
 export async function withTimeout<T>(
   promise: Promise<T>,

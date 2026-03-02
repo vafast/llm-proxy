@@ -3,12 +3,7 @@
 
   // --- General Authentication ---
   // API Key for llm proxy.
-  "PROXY_API_KEY": "YOUR-PROXY-API-KEY",
-
-  // --- AI Gateway ---
-  "CLOUDFLARE_ACCOUNT_ID": null,
-  "AI_GATEWAY_NAME": null,
-  "CF_AIG_TOKEN": null,
+  "PROXY_API_KEY": null,
 
   // --- API keys for providers ---
   // OpenAI: https://platform.openai.com/

@@ -10,6 +10,6 @@ export const healthRoutes = [
   defineRoute({
     method: "GET",
     path: "/status",
-    handler: async ({ req }) => status(req.aiGateway),
+    handler: async () => status(),
   }),
 ];

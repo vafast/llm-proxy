@@ -58,7 +58,7 @@ export class CustomOpenAI extends OpenAICompatibleProvider {
   }
 
   available(): boolean {
-    // Custom endpoints are considered available if they are defined in config
+    // 自定义端点在配置中定义即视为可用
     return true;
   }
 

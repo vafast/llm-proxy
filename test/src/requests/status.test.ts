@@ -36,11 +36,6 @@ describe("status", () => {
 
     vi.mocked(Config.isDevelopment).mockReturnValue(false);
     vi.mocked(Config.defaultModel).mockReturnValue("gpt-4");
-    vi.mocked(Config.aiGateway).mockReturnValue({
-      accountId: "acc-123",
-      name: "gw-123",
-      token: "tok-123",
-    });
     vi.mocked(Config.isGlobalRoundRobinEnabled).mockReturnValue(true);
 
     vi.mocked(Environments.all).mockReturnValue({} as any);
@@ -68,22 +63,17 @@ describe("status", () => {
   });
 
   it("should return structured JSON with config and provider status", async () => {
-    vi.mocked(Secrets.getAll).mockReturnValue(["sk-123456789", "sk-abcdefghi"]);
+    vi.mocked(Secrets.getAll).mockReturnValue(["mock-key-789", "mock-key-ghi"]);
     mockProviderClass.fetch.mockResolvedValue(
       new Response(null, { status: 200 }),
     );
 
-    // status() 现在返回普通对象 { config, providers }
+    // status() 返回普通对象 { config, providers }
     const result = await status();
 
     expect(result.config).toEqual({
       DEV: false,
       DEFAULT_MODEL: "gpt-4",
-      AI_GATEWAY: {
-        accountId: "acc-123",
-        name: "gw-123",
-        token: "tok-123",
-      },
       GLOBAL_ROUND_ROBIN: true,
     });
 

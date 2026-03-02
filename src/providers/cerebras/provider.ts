@@ -5,6 +5,7 @@ export class Cerebras extends OpenAICompatibleProvider {
   readonly apiKeyName: keyof Env = "CEREBRAS_API_KEY";
   readonly baseUrlProp: string = "https://api.cerebras.ai/v1";
 
+  // Cerebras 当前不支持的 OpenAI 特性
   // https://inference-docs.cerebras.ai/openai#currently-unsupported-openai-features
   readonly CHAT_COMPLETIONS_SUPPORTED_PARAMETERS: (keyof OpenAIChatCompletionsRequestBody)[] =
     [

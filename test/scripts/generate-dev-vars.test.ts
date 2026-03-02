@@ -12,7 +12,7 @@ import {
 } from "../../scripts/generate-dev-vars";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-// Mock file system operations
+// Mock 文件系统操作
 const createMockFileSystem = (files: Record<string, string> = {}) => {
   const mockFs: FileSystemOperations = {
     existsSync: vi.fn((path: string) => path in files),
@@ -96,7 +96,7 @@ describe("parseJsonc", () => {
 
   it("should parse JSON with single-line comments", () => {
     const jsonString = `{
-      // This is a comment
+      // 这是注释
       "key": "value"
     }`;
     const result = parseJsonc(jsonString);
@@ -105,8 +105,8 @@ describe("parseJsonc", () => {
 
   it("should parse JSON with multi-line comments", () => {
     const jsonString = `{
-      /* This is a
-         multi-line comment */
+      /* 这是
+         多行注释 */
       "key": "value"
     }`;
     const result = parseJsonc(jsonString);
@@ -124,12 +124,12 @@ describe("parseJsonc", () => {
 
   it("should parse complex JSONC", () => {
     const jsonString = `{
-      // Configuration file
+      // 配置文件
       "$schema": "./config-schema.json",
-      "API_KEY": "test-key", // API key
+      "API_KEY": "test-key", // API 密钥
       "FEATURES": ["feature1", "feature2"],
-      /* Multi-line
-         comment */
+      /* 多行
+         注释 */
       "DEBUG": true,
     }`;
     const result = parseJsonc(jsonString);
@@ -146,7 +146,7 @@ describe("parseJsonc", () => {
       "url1": "https://example.com",
       "url2": "http://test.com/path",
       "text": "This is not a /* block comment */"
-    }`;
+    }`; // text 中的 /* */ 为字符串内容，非注释
     const result = parseJsonc(jsonString);
     expect(result).toEqual({
       url1: "https://example.com",

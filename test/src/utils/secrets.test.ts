@@ -35,7 +35,7 @@ describe("getSecureRandomIndex", () => {
       return array;
     });
 
-    // 使用 vi.stubGlobal 替代直接赋值，兼容 Node.js v24 只读属性
+    // 用 vi.stubGlobal 替代直接赋值，兼容 Node.js v24 只读属性
     vi.stubGlobal("crypto", {
       getRandomValues: mockGetRandomValues,
     });
@@ -54,7 +54,7 @@ describe("getSecureRandomIndex", () => {
     let callCount = 0;
     const mockGetRandomValues = vi.fn((array: Uint32Array) => {
       callCount++;
-      // 第一次返回 >= limit 的值，第二次返回有效值
+      // 第一次返回 >= limit，第二次返回有效值
       array[0] = callCount === 1 ? limit : 0;
       return array;
     });
@@ -125,7 +125,7 @@ describe("Secrets", () => {
     it("should use global counter if global round-robin is enabled", async () => {
       vi.mocked(Config.isGlobalRoundRobinEnabled).mockReturnValue(true);
 
-      // 通过 vi.mock 注入的 key_rotation 模块 mock
+      // 通过 vi.mock 注入 key_rotation 模块
       const { getNextIndex } = await import("~/src/utils/key_rotation");
       vi.mocked(getNextIndex).mockResolvedValue(1);
 
@@ -145,21 +145,21 @@ describe("Secrets", () => {
       vi.mocked(randomInt).mockReturnValue(2 as any);
       const index = Secrets.resolveApiKeyIndex({ start: 1, end: 3 }, 5);
       expect(index).toBe(2);
-      expect(randomInt).toHaveBeenCalledWith(1, 4); // start=1, end=3 -> randomInt(1, 4)
+      expect(randomInt).toHaveBeenCalledWith(1, 4); // start=1, end=3 => randomInt(1, 4)
     });
 
     it("should use length-1 as default for end", () => {
       vi.mocked(randomInt).mockReturnValue(4 as any);
       const index = Secrets.resolveApiKeyIndex({ start: 2 }, 5);
       expect(index).toBe(4);
-      expect(randomInt).toHaveBeenCalledWith(2, 5); // start=2, end=undefined(4) -> randomInt(2, 5)
+      expect(randomInt).toHaveBeenCalledWith(2, 5); // start=2, end=undefined(4) => randomInt(2, 5)
     });
 
     it("should use 0 as default for start", () => {
       vi.mocked(randomInt).mockReturnValue(1 as any);
       const index = Secrets.resolveApiKeyIndex({ end: 2 }, 5);
       expect(index).toBe(1);
-      expect(randomInt).toHaveBeenCalledWith(0, 3); // start=undefined(0), end=2 -> randomInt(0, 3)
+      expect(randomInt).toHaveBeenCalledWith(0, 3); // start=undefined(0), end=2 => randomInt(0, 3)
     });
 
     it("should return start if start >= end", () => {

@@ -1,5 +1,4 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { CloudflareAIGateway } from "~/src/ai_gateway";
 import { Providers } from "~/src/providers";
 import { getAllProviders, getProvider } from "~/src/providers";
 import { ProviderNotSupportedError } from "~/src/providers/provider";
@@ -7,7 +6,6 @@ import { models } from "~/src/requests/models";
 import * as helpers from "~/src/utils/helpers";
 import { Secrets } from "~/src/utils/secrets";
 
-vi.mock("~/src/ai_gateway");
 vi.mock("~/src/providers", async () => {
   const actual =
     await vi.importActual<typeof import("~/src/providers")>("~/src/providers");
@@ -44,10 +42,6 @@ describe("models", () => {
     getNextApiKeyIndex: vi.fn().mockResolvedValue(0),
   };
 
-  const mockAIGateway = {
-    buildProviderEndpointRequest: vi.fn(),
-  };
-
   beforeEach(() => {
     vi.clearAllMocks();
 
@@ -66,7 +60,6 @@ describe("models", () => {
     vi.mocked(helpers.fetch2).mockImplementation(() =>
       Promise.resolve(new Response(JSON.stringify({ data: [] }))),
     );
-    vi.mocked(CloudflareAIGateway.isSupportedProvider).mockReturnValue(true);
     vi.mocked(Secrets.getAll).mockReturnValue(["test-key"]);
     vi.mocked(Secrets.getNext).mockResolvedValue(0);
     vi.mocked(Secrets.resolveApiKeyIndex).mockImplementation((selection) => {
@@ -118,7 +111,7 @@ describe("models", () => {
   });
 
   it("should return models from all available providers", async () => {
-    // models() 现在返回普通对象，而非 Response
+    // models() 返回普通对象，非 Response
     const result = await models({} as any);
 
     expect(result).toEqual({
@@ -158,27 +151,6 @@ describe("models", () => {
 
     expect(result.data).toHaveLength(1);
     expect(result.data[0].id).toBe("openai/gpt-4");
-  });
-
-  it("should use AI Gateway when available and provider supported", async () => {
-    mockAIGateway.buildProviderEndpointRequest.mockReturnValue([
-      "https://gateway.ai.cloudflare.com/v1/account/gateway/openai/models",
-      { method: "GET", headers: {} },
-    ]);
-
-    // aiGateway 通过 request.aiGateway 传入
-    await models({ aiGateway: mockAIGateway } as any);
-
-    expect(CloudflareAIGateway.isSupportedProvider).toHaveBeenCalledWith(
-      "openai",
-    );
-    expect(mockAIGateway.buildProviderEndpointRequest).toHaveBeenCalledWith({
-      provider: "openai",
-      method: "GET",
-      path: "/models",
-      headers: { "Content-Type": "application/json" },
-    });
-    expect(helpers.fetch2).toHaveBeenCalled();
   });
 
   it("should handle provider errors gracefully", async () => {
@@ -393,8 +365,6 @@ describe("models", () => {
 
     Providers.test = vi.fn().mockReturnValue(testProviderClass);
     testProviderClass.getApiKeys.mockReturnValue(["key1", "key2", "key3"]);
-
-    vi.mocked(CloudflareAIGateway.isSupportedProvider).mockReturnValue(false);
 
     const result = await models({ apiKeyIndex: 2 } as any);
 

@@ -5,74 +5,74 @@ import { Config } from "~/src/utils/config";
 vi.mock("~/src/utils/config");
 
 describe("authenticate", () => {
-  // Mock the Config.apiKeys method to return a valid API key
+  // Mock Config.apiKeys 返回有效 API key
   beforeEach(() => {
     vi.mocked(Config.apiKeys).mockReturnValue(["valid-key"]);
   });
 
-  // Test when no API key is set in the environment
-  it("should return true when no PROXY_API_KEY is set", () => {
+  // 环境未配置 API key 时
+  it("should return true when no PROXY_API_KEY is set", async () => {
     vi.mocked(Config.apiKeys).mockReturnValue(undefined);
     const request = new Request("https://example.com");
 
-    expect(authenticate(request)).toBe(true);
+    expect(await authenticate(request)).toBe(true);
   });
 
-  // Test when API key is set and authentication succeeds with Authorization header
-  it("should return true when valid Authorization header is provided", () => {
+  // Authorization 头鉴权成功
+  it("should return true when valid Authorization header is provided", async () => {
     const request = new Request("https://example.com", {
       headers: {
         Authorization: "Bearer valid-key",
       },
     });
 
-    expect(authenticate(request)).toBe(true);
+    expect(await authenticate(request)).toBe(true);
   });
 
-  // Test when API key is set and authentication succeeds with x-api-key header
-  it("should return true when valid x-api-key header is provided", () => {
+  // x-api-key 头鉴权成功
+  it("should return true when valid x-api-key header is provided", async () => {
     const request = new Request("https://example.com", {
       headers: {
         "x-api-key": "valid-key",
       },
     });
 
-    expect(authenticate(request)).toBe(true);
+    expect(await authenticate(request)).toBe(true);
   });
 
-  // Test when API key is set and authentication succeeds with x-goog-api-key header
-  it("should return true when valid x-goog-api-key header is provided", () => {
+  // x-goog-api-key 头鉴权成功
+  it("should return true when valid x-goog-api-key header is provided", async () => {
     const request = new Request("https://example.com", {
       headers: {
         "x-goog-api-key": "valid-key",
       },
     });
 
-    expect(authenticate(request)).toBe(true);
+    expect(await authenticate(request)).toBe(true);
   });
 
-  // Test when API key is set and authentication succeeds with query parameter 'key'
-  it("should return true when valid 'key' query parameter is provided", () => {
+  // key 查询参数鉴权成功
+  it("should return true when valid 'key' query parameter is provided", async () => {
     const request = new Request("https://example.com?key=valid-key");
 
-    expect(authenticate(request)).toBe(true);
+    expect(await authenticate(request)).toBe(true);
   });
 
-  // Test when authentication fails due to missing headers
-  it("should return false when no authorization header or query key is provided", () => {
+  // 无鉴权头时失败
+  it("should return false when no authorization header or query key is provided", async () => {
     const request = new Request("https://example.com");
 
-    expect(authenticate(request)).toBe(false);
+    expect(await authenticate(request)).toBe(false);
   });
 
-  // Test when authentication fails due to incorrect API key
-  it("should return false when invalid API key is provided", () => {
+  // API key 错误时失败
+  it("should return false when invalid API key is provided", async () => {
     const request = new Request("https://example.com", {
       headers: {
         Authorization: "Bearer invalid-key",
       },
     });
 
-    expect(authenticate(request)).toBe(false);
+    expect(await authenticate(request)).toBe(false);
   });
 });

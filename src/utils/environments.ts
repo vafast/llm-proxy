@@ -13,10 +13,10 @@ export class Environments {
   }
 
   /**
-   * Checks if an environment variable exists.
+   * 检查环境变量是否存在。
    *
-   * @param {keyof Env} key - The environment variable key to check
-   * @returns {boolean} True if the environment variable exists, false otherwise
+   * @param {keyof Env} key - 环境变量名
+   * @returns {boolean} 存在返回 true，否则 false
    */
   static has(key: keyof Env): key is keyof Env {
     const env = this.all();
@@ -24,23 +24,21 @@ export class Environments {
   }
 
   /**
-   * Gets a specific environment variable by key and returns it as a string.
+   * 按 key 获取环境变量，返回字符串。
    *
-   * @param {keyof Env} key - The environment variable key to retrieve
-   * @param {false} parse - Set to false to prevent parsing and return the raw string
-   * @returns {string | undefined} The environment variable value as a string, or undefined if not found
+   * @param {keyof Env} key - 环境变量名
+   * @param {false} parse - 设为 false 时不解析，返回原始字符串
+   * @returns {string | undefined} 环境变量值，未找到返回 undefined
    */
   static get(key: keyof Env, parse: false): string | undefined;
 
   /**
-   * Gets a specific environment variable by key and parses it.
-   * Parsing attempts to convert the value to a JSON object, array, or number.
-   * If JSON parsing fails, it tries to parse as comma-separated values.
+   * 按 key 获取环境变量并解析。
+   * 解析时优先尝试 JSON，失败则尝试逗号分隔。
    *
-   * @param {keyof Env} key - The environment variable key to retrieve
-   * @param {boolean} [parse=true] - Whether to parse the value
-   * @returns {string | Array<any> | Object | number | undefined} The environment variable value,
-   * parsed according to the parse parameter
+   * @param {keyof Env} key - 环境变量名
+   * @param {boolean} [parse=true] - 是否解析
+   * @returns {string | Array<any> | Object | number | undefined} 解析后的值
    */
   static get(
     key: keyof Env,
@@ -62,25 +60,25 @@ export class Environments {
       return value;
     }
 
-    // Try to parse as JSON first
+    // 优先尝试 JSON 解析
     const jsonValue = this.parseJson(value);
     if (jsonValue !== undefined) {
       return jsonValue;
     }
 
-    // If JSON parsing fails, try to parse as comma-separated values
+    // JSON 解析失败则尝试逗号分隔
     const separatedTexts = this.parseCommaSeparatedText(value);
 
-    // If parsing fails, return the original value
+    // 解析失败则返回原值
     return separatedTexts ?? value;
   }
 
   /**
-   * Attempts to parse a string as JSON.
+   * 尝试将字符串解析为 JSON。
    *
    * @private
-   * @param {string} value - The string to parse
-   * @returns {Array<any> | Object | number | undefined} The parsed JSON value or undefined if parsing fails
+   * @param {string} value - 待解析字符串
+   * @returns {Array<any> | Object | number | undefined} 解析结果，失败返回 undefined
    */
   private static parseJson(
     value: string,
@@ -93,11 +91,11 @@ export class Environments {
   }
 
   /**
-   * Parses a comma-separated string into an array of trimmed strings.
+   * 将逗号分隔字符串解析为去空格后的数组。
    *
    * @private
-   * @param {string} value - The comma-separated string to parse
-   * @returns {Array<string> | undefined} An array of trimmed strings
+   * @param {string} value - 逗号分隔字符串
+   * @returns {Array<string> | undefined} 字符串数组
    */
   private static parseCommaSeparatedText(
     value: string,

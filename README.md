@@ -13,8 +13,9 @@
   - `/v1/chat/completions`
   - `/v1/models`
 - **Cloudflare AI Gateway 集成** — 可选接入 [AI Gateway](https://developers.cloudflare.com/ai-gateway/) 实现日志、分析、限流等
-- **全局轮询 Key** — 通过 Upstash Redis 或内存实现分布式 Key 轮询
+- **全局轮询 Key** — 通过 Redis 或内存实现分布式 Key 轮询
 - **路径参数选 Key** — URL 中使用 `/key/{index|range}/` 指定或限定 API Key 范围
+- **Admin Key 管理** — 通过 `/admin/keys` 动态创建、管理代理 Key（需 PostgreSQL）
 
 ```mermaid
 flowchart LR
@@ -120,6 +121,16 @@ curl -X POST https://your-domain/v1/chat/completions \
 |------|------|
 | `PROXY_API_KEY` | 代理鉴权密钥（非 DEV 模式下必填） |
 
+### Admin Key 管理（可选）
+
+| 变量 | 说明 |
+|------|------|
+| `ADMIN_KEY` | 管理员鉴权密钥，用于 `/admin/keys` 接口 |
+| `DATABASE_URL` | PostgreSQL 连接串（Railway 部署用私网） |
+| `DATABASE_PUBLIC_URL` | PostgreSQL 公网连接串（本地开发用） |
+
+配置后可通过 Admin API 动态创建 Key，创建的 Key 与 `PROXY_API_KEY` 等效用于代理鉴权。无 DB 时回退到 `PROXY_API_KEY`。
+
 ### Cloudflare AI Gateway（可选）
 
 | 变量 | 说明 |
@@ -133,8 +144,8 @@ curl -X POST https://your-domain/v1/chat/completions \
 | 变量 | 说明 |
 |------|------|
 | `ENABLE_GLOBAL_ROUND_ROBIN` | 设为 `true` 开启全局轮询（默认 `false`） |
-| `KV_REST_API_URL` | Upstash Redis REST URL（分布式轮询时需要） |
-| `KV_REST_API_TOKEN` | Upstash Redis REST Token |
+| `REDIS_URL` | Redis 连接串（redis://...，内网用） |
+| `REDIS_PUBLIC_URL` | Redis 公网连接串（本地测 Railway 等用） |
 
 未配置 Redis 时自动使用内存轮询（适用于单进程）。
 
@@ -173,6 +184,31 @@ curl -X POST https://your-domain/v1/chat/completions \
 | `/key/-4/` | 从 index 0 到 4 随机 | `/key/-4/v1/chat/completions` |
 
 范围内的随机选择使用 `crypto.randomInt`（密码学安全随机数）。
+
+## Admin Key 管理
+
+需配置 `ADMIN_KEY` 和 `DATABASE_URL`（或 `DATABASE_PUBLIC_URL`）。
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| POST | `/admin/keys` | 创建 Key，可选 `{"name":"xxx"}`，返回明文仅此一次 |
+| GET | `/admin/keys` | 列表（不含明文） |
+| PATCH | `/admin/keys/:id` | 更新 `enabled` 或 `name` |
+| DELETE | `/admin/keys/:id` | 删除 |
+
+鉴权：`Authorization: Bearer <ADMIN_KEY>` 或 `x-admin-key: <ADMIN_KEY>`
+
+```bash
+# 创建 Key
+curl -X POST https://your-server/admin/keys \
+  -H "Authorization: Bearer $ADMIN_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"my-app"}'
+
+# 使用创建的 Key 访问代理
+curl https://your-server/v1/models \
+  -H "Authorization: Bearer <返回的 key>"
+```
 
 ## 使用示例
 
@@ -240,9 +276,10 @@ npm run tsc          # TypeScript 类型检查
 ```
 src/
 ├── index.ts              # 服务入口
-├── common/env.ts         # 环境变量（Zod 校验）
+├── common/env.ts         # 环境变量（envalid 校验）
+├── db/                   # PostgreSQL 连接与 keys 表
 ├── routes/               # Vafast 路由定义
-├── middleware/            # 中间件（鉴权、错误处理、AI Gateway 等）
+├── middleware/           # 中间件（鉴权、错误处理、AI Gateway 等）
 ├── requests/             # 请求处理器
 ├── providers/            # LLM 厂商适配
 ├── ai_gateway/           # Cloudflare AI Gateway 集成

@@ -20,14 +20,14 @@ export const Providers: {
   [providerName: string]: typeof ProviderBase;
 } = {
   anthropic: Anthropic,
-  // "azure-openai": {},
-  // "cartesia": {},
+  // "azure-openai": {} 待实现
+  // "cartesia": {} 待实现
   cerebras: Cerebras,
   cohere: Cohere,
   deepseek: DeepSeek,
-  // elevenlabs: {},
+  // elevenlabs: {} 待实现
   "google-ai-studio": GoogleAiStudio,
-  // "google-vertex-ai": {},
+  // "google-vertex-ai": {} 待实现
   grok: Grok,
   groq: Groq,
   huggingface: HuggingFace,
@@ -37,7 +37,7 @@ export const Providers: {
   "perplexity-ai": PerplexityAi,
   replicate: Replicate,
   ollama: Ollama,
-  // --- Other Providers
+  // --- 其他 Provider 待实现
 };
 
 export function getProvider(
@@ -49,7 +49,7 @@ export function getProvider(
     return new ProviderClass();
   }
 
-  // Check for custom endpoints
+  // 检查自定义端点
   const customEndpoints = Config.customOpenAIEndpoints();
   const customConfig = customEndpoints?.find((e) => e.name === providerName);
   if (customConfig) {
@@ -67,7 +67,7 @@ export function getAllProviders(env: Env): Record<string, ProviderBase> {
     ]),
   );
 
-  // Add custom endpoints
+  // 添加自定义端点
   const customEndpoints = Config.customOpenAIEndpoints();
   if (customEndpoints) {
     for (const config of customEndpoints) {

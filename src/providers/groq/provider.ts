@@ -6,7 +6,7 @@ export class Groq extends OpenAICompatibleProvider {
   readonly apiKeyName: keyof Env = "GROQ_API_KEY";
   readonly baseUrlProp: string = "https://api.groq.com/openai/v1";
 
-  // Convert model list to OpenAI format
+  // 将模型列表转为 OpenAI 格式
   modelsToOpenAIFormat(
     data: GroqModelsListResponseBody,
   ): OpenAIModelsListResponseBody {
