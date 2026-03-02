@@ -24,12 +24,12 @@ export async function proxy(
     throw new NotFoundError();
   }
 
-  // 部分 provider 的 baseUrl 已包含 /v1，若 pathname 以 /v1/ 开头则去除以避免重复
+  // 部分 provider 的 baseUrl 已包含 /v1，若 pathname 以 /v1 开头则去除以避免重复
   let normalizedPathname = pathname;
-  if (pathname.startsWith("/v1/")) {
+  if (pathname.startsWith("/v1/") || pathname === "/v1") {
     const base = providerInstance.baseUrl();
     if (base.endsWith("/v1") || base.endsWith("/v1/")) {
-      normalizedPathname = pathname.slice(4);
+      normalizedPathname = pathname.replace(/^\/v1/, "") || "/";
     }
   }
 

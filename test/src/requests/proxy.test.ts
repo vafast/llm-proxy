@@ -87,4 +87,64 @@ describe("proxy", () => {
       0,
     );
   });
+
+  describe("pathname 规范化（baseUrl 已含 /v1 时去除重复）", () => {
+    it("should normalize /v1/chat/completions to /chat/completions when baseUrl ends with /v1", async () => {
+      const mockProvider = {
+        ...mockProviderClass,
+        baseUrl: vi.fn().mockReturnValue("https://api.openai.com/v1"),
+      };
+
+      vi.mocked(getProvider).mockImplementation(() => mockProvider as any);
+
+      const mockRequest = new Request("https://example.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: new Headers(),
+      });
+
+      await proxy(mockRequest, "openai", "/v1/chat/completions", { model: "gpt-4o" });
+
+      expect(mockProvider.fetch).toHaveBeenCalledWith(
+        "/chat/completions",
+        expect.any(Object),
+        0,
+      );
+    });
+
+    it("should preserve leading slash in normalized pathname", async () => {
+      const mockProvider = {
+        ...mockProviderClass,
+        baseUrl: vi.fn().mockReturnValue("https://api.openai.com/v1"),
+      };
+
+      vi.mocked(getProvider).mockImplementation(() => mockProvider as any);
+
+      const mockRequest = new Request("https://example.com/", { method: "GET", headers: new Headers() });
+
+      await proxy(mockRequest, "openai", "/v1/models");
+
+      const calledPath = (mockProvider.fetch as ReturnType<typeof vi.fn>).mock.calls[0][0];
+      expect(calledPath).toBe("/models");
+      expect(calledPath.startsWith("/")).toBe(true);
+    });
+
+    it("should NOT normalize when baseUrl does not end with /v1", async () => {
+      const mockProvider = {
+        ...mockProviderClass,
+        baseUrl: vi.fn().mockReturnValue("https://api.anthropic.com"),
+      };
+
+      vi.mocked(getProvider).mockImplementation(() => mockProvider as any);
+
+      const mockRequest = new Request("https://example.com/", { method: "GET", headers: new Headers() });
+
+      await proxy(mockRequest, "anthropic", "/v1/messages");
+
+      expect(mockProvider.fetch).toHaveBeenCalledWith(
+        "/v1/messages",
+        expect.any(Object),
+        0,
+      );
+    });
+  });
 });
