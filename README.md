@@ -65,6 +65,11 @@ cp .env.example .env.development
 npm run dev
 ```
 
+**首次部署说明：**
+
+- **无数据库**：必须配置 `PROXY_API_KEY`，否则所有请求将返回 401。启动时若未配置会打印 warning 提示
+- **有数据库**：配置 `ADMIN_KEY` 和 `DATABASE_URL` 后，需先通过 Admin API 创建 key，再使用该 key 访问代理；或同时配置 `PROXY_API_KEY` 作为备选
+
 ### 部署方式
 
 #### Docker
@@ -128,6 +133,8 @@ curl -X POST https://your-domain/v1/chat/completions \
 
 配置 DB 后可通过 Admin API 动态创建 Key，与 `PROXY_API_KEY` 二选一用于鉴权。无 DB 时需配置 `PROXY_API_KEY`。
 
+**首次使用 DB 模式**：配置完成后，需先调用 `POST /admin/keys` 创建 key，返回的 key 用于后续代理请求鉴权。
+
 ### 全局 Key 轮询（可选）
 
 | 变量 | 说明 |
@@ -176,7 +183,7 @@ curl -X POST https://your-domain/v1/chat/completions \
 
 ## Admin Key 管理
 
-需配置 `ADMIN_KEY` 和 `DATABASE_URL`（或 `DATABASE_PUBLIC_URL`）。
+需配置 `ADMIN_KEY` 和 `DATABASE_URL`（或 `DATABASE_PUBLIC_URL`）。**首次使用需先创建 key**，创建的 key 与 `PROXY_API_KEY` 等效，可用于所有代理接口。
 
 | 方法 | 路径 | 说明 |
 |------|------|------|

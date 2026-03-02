@@ -13,6 +13,29 @@ import { errorMiddleware } from "./middleware/error";
 import { createAllRoutes } from "./routes";
 import { env } from "./common/env";
 import { initDb } from "./db";
+import { Config } from "./utils/config";
+
+/** 启动时检测鉴权配置，无配置时打印 warning */
+function warnIfNoAuthConfig(): void {
+  if (env.nodeEnv === "test") return;
+
+  const hasDb = !!(
+    process.env.DATABASE_URL || process.env.DATABASE_PUBLIC_URL
+  );
+  const apiKeys = Config.apiKeys();
+  const hasEnvKeys =
+    apiKeys && apiKeys.length > 0 && apiKeys.some((k) => k?.trim?.());
+
+  if (!hasDb && !hasEnvKeys) {
+    console.warn(
+      "⚠️ 未配置鉴权：未设置 PROXY_API_KEY 且无数据库。所有请求将被拒绝。请在 .env 中配置 PROXY_API_KEY 或 DATABASE_URL。",
+    );
+  } else if (hasDb && !hasEnvKeys) {
+    console.warn(
+      "⚠️ 仅配置了数据库：请通过 Admin API 创建 key 后使用，或配置 PROXY_API_KEY。",
+    );
+  }
+}
 
 // 根路由（无鉴权）- 负载均衡器 / Railway healthcheck
 const rootRoutes = defineRoutes([
@@ -37,6 +60,7 @@ serve(
   },
   async () => {
     await initDb();
+    warnIfNoAuthConfig();
     console.log(`LLM Proxy 已启动: http://localhost:${env.port}`);
   },
 );
