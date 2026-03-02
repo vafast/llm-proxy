@@ -65,13 +65,30 @@ export function maskUrl(url: string): string {
   }
 }
 
+/**
+ * Node.js fetch() 会自动解压 gzip/br 响应，但不会修改 Response.headers，
+ * 导致 content-encoding/content-length 与实际 body 不匹配。
+ * 作为代理透传时需要剥掉这些 hop-by-hop 头。
+ */
+const HOP_BY_HOP_HEADERS = ["content-encoding", "content-length", "transfer-encoding"];
+
+function stripHopHeaders(response: Response): Response {
+  const headers = new Headers(response.headers);
+  for (const h of HOP_BY_HOP_HEADERS) headers.delete(h);
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
+}
+
 export const fetch2: typeof fetch = async (input, init) => {
   const url = input.toString();
-  // URL is masked to prevent exposing sensitive data like API keys
   const maskedUrl = maskUrl(url);
   console.info(`Sub-Request: ${init?.method} ${maskedUrl}`);
 
-  return await fetch(input, init);
+  const response = await fetch(input, init);
+  return stripHopHeaders(response);
 };
 
 export function safeJsonParse(text: string): string | { [key: string]: any } {
