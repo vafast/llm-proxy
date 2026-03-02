@@ -37,7 +37,7 @@
   "PERPLEXITYAI_API_KEY": null,
   // Replicate: https://replicate.com/
   "REPLICATE_API_KEY": null,
-  // Cloudflare Workers AI: https://dash.cloudflare.com/
+  // Cloudflare AI: https://dash.cloudflare.com/
   "CLOUDFLARE_API_KEY": null,
   // Ollama Cloud: https://ollama.com/
   "OLLAMA_API_KEY": null,
