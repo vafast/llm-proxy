@@ -60,8 +60,24 @@ async function writeWebResponse(
 ): Promise<void> {
   res.statusCode = webRes.status;
   webRes.headers.forEach((value, key) => res.setHeader(key, value));
-  const buf = await webRes.arrayBuffer();
-  res.end(Buffer.from(buf));
+
+  if (!webRes.body) {
+    res.end();
+    return;
+  }
+
+  // 通过 ReadableStream reader 逐块写入，同时支持流式和非流式响应
+  const reader = webRes.body.getReader();
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      res.write(Buffer.from(value));
+    }
+  } finally {
+    reader.releaseLock();
+    res.end();
+  }
 }
 
 export default async function handler(
