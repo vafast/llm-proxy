@@ -46,7 +46,9 @@ describe("compat", () => {
     expect(callArgs.path).toBe("/compat/chat/completions");
     // forwardBody 使用传入的 body 字符串，而非 request.body stream
     expect(callArgs.body).toBe(bodyStr);
-    expect(callArgs.headers.authorization).toBeUndefined();
+    expect(
+      (callArgs.headers as Record<string, string>)["authorization"],
+    ).toBeUndefined();
 
     expect(fetch2).toHaveBeenCalledWith(
       "https://gateway.ai.cloudflare.com/v1/account/gateway/compat/chat/completions",

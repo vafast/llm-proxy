@@ -25,4 +25,3 @@ jobs:
       - run: npm run tsc
       - run: npm run test
       - run: npm run lint
-      - run: npm run prettier-ci

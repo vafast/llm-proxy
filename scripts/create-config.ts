@@ -273,10 +273,8 @@ async function main(): Promise<void> {
 
     console.log(`\n✅ ${CONFIG_OUTPUT_PATH} created successfully!`);
     console.log("\nNext steps:");
-    console.log("1. Run 'npm run deploy' to deploy to Cloudflare Workers");
-    console.log(
-      "2. Run 'npm run secrets:deploy' to register API keys as secrets",
-    );
+    console.log("1. 将配置中的值填入 .env.development 或 .env.production");
+    console.log("2. Run 'npm run dev' to start development server");
   } catch (error) {
     console.error(
       "\nAn error occurred:",
