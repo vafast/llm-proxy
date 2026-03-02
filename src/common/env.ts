@@ -1,82 +1,60 @@
 /**
  * 环境变量配置
  *
- * 使用 zod 进行类型安全校验，启动时立即验证
+ * 使用 envalid 进行类型安全校验，启动时立即验证
  */
-import { z } from "zod";
+import { cleanEnv, str, port, bool } from "envalid";
 
-const envSchema = z.object({
-  NODE_ENV: z
-    .enum(["development", "production", "staging", "test"])
-    .default("development"),
-  PORT: z.coerce.number().default(8787),
+const parsed = cleanEnv(process.env, {
+  NODE_ENV: str({
+    choices: ["development", "production", "staging", "test"],
+    default: "development",
+  }),
+  PORT: port({ default: 8787 }),
 
   // 代理鉴权
-  PROXY_API_KEY: z.string().default(""),
+  PROXY_API_KEY: str({ default: "" }),
 
   // AI Gateway（Cloudflare，可选）
-  CLOUDFLARE_ACCOUNT_ID: z.string().default(""),
-  AI_GATEWAY_NAME: z.string().default(""),
-  CF_AIG_TOKEN: z.string().default(""),
+  CLOUDFLARE_ACCOUNT_ID: str({ default: "" }),
+  AI_GATEWAY_NAME: str({ default: "" }),
+  CF_AIG_TOKEN: str({ default: "" }),
 
   // Upstash Redis（Key 轮询，可选）
-  KV_REST_API_URL: z.string().default(""),
-  KV_REST_API_TOKEN: z.string().default(""),
+  KV_REST_API_URL: str({ default: "" }),
+  KV_REST_API_TOKEN: str({ default: "" }),
 
   // Provider API Keys
-  OPENAI_API_KEY: z.string().default(""),
-  GEMINI_API_KEY: z.string().default(""),
-  ANTHROPIC_API_KEY: z.string().default(""),
-  CEREBRAS_API_KEY: z.string().default(""),
-  COHERE_API_KEY: z.string().default(""),
-  DEEPSEEK_API_KEY: z.string().default(""),
-  GROK_API_KEY: z.string().default(""),
-  GROQ_API_KEY: z.string().default(""),
-  MISTRAL_API_KEY: z.string().default(""),
-  OPENROUTER_API_KEY: z.string().default(""),
-  HUGGINGFACE_API_KEY: z.string().default(""),
-  PERPLEXITYAI_API_KEY: z.string().default(""),
-  REPLICATE_API_KEY: z.string().default(""),
-  CLOUDFLARE_API_KEY: z.string().default(""),
-  OLLAMA_API_KEY: z.string().default(""),
+  OPENAI_API_KEY: str({ default: "" }),
+  GEMINI_API_KEY: str({ default: "" }),
+  ANTHROPIC_API_KEY: str({ default: "" }),
+  CEREBRAS_API_KEY: str({ default: "" }),
+  COHERE_API_KEY: str({ default: "" }),
+  DEEPSEEK_API_KEY: str({ default: "" }),
+  GROK_API_KEY: str({ default: "" }),
+  GROQ_API_KEY: str({ default: "" }),
+  MISTRAL_API_KEY: str({ default: "" }),
+  OPENROUTER_API_KEY: str({ default: "" }),
+  HUGGINGFACE_API_KEY: str({ default: "" }),
+  PERPLEXITYAI_API_KEY: str({ default: "" }),
+  REPLICATE_API_KEY: str({ default: "" }),
+  CLOUDFLARE_API_KEY: str({ default: "" }),
+  OLLAMA_API_KEY: str({ default: "" }),
 
   // 自定义 OpenAI 兼容端点（JSON 字符串）
-  CUSTOM_OPENAI_ENDPOINTS: z.string().default(""),
+  CUSTOM_OPENAI_ENDPOINTS: str({ default: "" }),
 
   // 配置
-  DEV: z
-    .string()
-    .default("false")
-    .transform((v) => v === "true" || v === "1"),
-  DEFAULT_MODEL: z.string().default(""),
-  ENABLE_GLOBAL_ROUND_ROBIN: z
-    .string()
-    .default("false")
-    .transform((v) => v === "true" || v === "1"),
+  DEV: bool({ default: false }),
+  DEFAULT_MODEL: str({ default: "" }),
+  ENABLE_GLOBAL_ROUND_ROBIN: bool({ default: false }),
 });
-
-function parseEnv() {
-  const result = envSchema.safeParse(process.env);
-
-  if (!result.success) {
-    console.error("\n❌ 环境变量校验失败:\n");
-    result.error.issues.forEach((issue) => {
-      console.error(`   ${issue.path.join(".")}: ${issue.message}`);
-    });
-    console.error("\n");
-    process.exit(1);
-  }
-
-  return result.data;
-}
-
-const parsed = parseEnv();
 
 export const env = {
   nodeEnv: parsed.NODE_ENV,
   port: parsed.PORT,
-  isDev: parsed.NODE_ENV === "development",
-  isProd: parsed.NODE_ENV === "production",
+  isDev: parsed.isDev,
+  isProd: parsed.isProd,
 } as const;
 
 export const proxyConfig = {
