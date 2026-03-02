@@ -12,7 +12,7 @@
     "test-watch": "vitest watch",
     "lint": "eslint 'src/**/*.ts'",
     "lint:fix": "eslint --fix 'src/**/*.ts'",
-    "vercel-build": "tsdown -c tsdown.config.vercel.ts && rm -f api/index.ts && mkdir -p public && echo '{}' > public/.keep"
+    "vercel-build": "[ -f api/index.ts ] && (tsdown -c tsdown.config.vercel.ts && rm -f api/index.ts); mkdir -p public && echo '{}' > public/.keep"
   },
   "dependencies": {
     "@dotenvx/dotenvx": "^1.41.0",
