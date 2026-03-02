@@ -166,9 +166,6 @@ dist
 .yarn/install-state.gz
 .pnp.\*
 
-# Vercel build output
-api/
-
 # wrangler project
 
 .dev.vars

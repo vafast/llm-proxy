@@ -4,7 +4,7 @@ export default defineConfig({
   entry: { index: "src/vercel.ts" },
   format: ["esm"],
   outDir: "api",
-  clean: false,
+  clean: true,
   minify: true,
   dts: false,
   outputOptions: { codeSplitting: false },
