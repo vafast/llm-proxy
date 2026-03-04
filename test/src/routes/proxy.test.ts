@@ -146,4 +146,51 @@ describe("proxy", () => {
       );
     });
   });
+
+  describe("query string 透传", () => {
+    it("应透传 search 到上游（如 Gemini alt=sse）", async () => {
+      const mockProvider = {
+        ...mockProviderClass,
+        baseUrl: vi.fn().mockReturnValue("https://generativelanguage.googleapis.com"),
+      };
+
+      vi.mocked(getProvider).mockImplementation(() => mockProvider as any);
+
+      const mockRequest = new Request(
+        "https://proxy.example.com/google-ai-studio/v1beta/models/gemini-3.1-pro:streamGenerateContent?alt=sse",
+        { method: "POST", headers: new Headers(), body: "{}" },
+      );
+
+      await proxy(
+        mockRequest,
+        "google-ai-studio",
+        "/v1beta/models/gemini-3.1-pro:streamGenerateContent",
+        {},
+        "?alt=sse",
+      );
+
+      expect(mockProvider.fetch).toHaveBeenCalledWith(
+        "/v1beta/models/gemini-3.1-pro:streamGenerateContent?alt=sse",
+        expect.objectContaining({ method: "POST" }),
+        0,
+      );
+    });
+
+    it("无 search 时 pathname 不变", async () => {
+      Providers["testProvider"] = vi.fn().mockImplementation(() => mockProviderClass);
+
+      const mockRequest = new Request("https://example.com/test/path", {
+        method: "GET",
+        headers: new Headers(),
+      });
+
+      await proxy(mockRequest, "testProvider", "/test/path");
+
+      expect(mockProviderClass.fetch).toHaveBeenCalledWith(
+        "/test/path",
+        expect.any(Object),
+        0,
+      );
+    });
+  });
 });

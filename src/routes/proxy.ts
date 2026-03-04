@@ -20,6 +20,7 @@ export async function proxy(
   providerName: string,
   pathname: string,
   body?: unknown,
+  search?: string,
 ) {
   const contextApiKeyIndex = request.apiKeyIndex;
 
@@ -56,8 +57,10 @@ export async function proxy(
 
   const forwardHeaders = buildForwardHeaders(request, providerName);
 
+  const pathnameWithSearch = search ? normalizedPathname + search : normalizedPathname;
+
   return providerInstance.fetch(
-    normalizedPathname,
+    pathnameWithSearch,
     {
       method: request.method,
       body: rawBody,
@@ -81,7 +84,8 @@ export function createProxyRoutes() {
         },
         handler: async ({ req, body, params }) => {
           const targetPathname = "/" + params.proxyPath;
-          return proxy(req, providerName, targetPathname, body);
+          const search = new URL(req.url).search;
+          return proxy(req, providerName, targetPathname, body, search);
         },
       }),
     ),
