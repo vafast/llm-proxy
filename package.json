@@ -10,7 +10,9 @@
     "tsc": "tsc --noEmit",
     "test": "vitest run",
     "test-watch": "vitest watch",
-    "test:integration": "./test/integration/api-http.sh",
+    "test:integration": "dotenvx run -f .env.development -- vitest run test/integration/api.integration.test.ts",
+    "test:integration:model": "dotenvx run -f .env.development -- vitest run test/integration/model-call.integration.test.ts",
+    "test:integration:all": "dotenvx run -f .env.development -- vitest run test/integration/",
     "lint": "eslint 'src/**/*.ts'",
     "lint:fix": "eslint --fix 'src/**/*.ts'"
   },

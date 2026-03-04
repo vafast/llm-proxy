@@ -11,4 +11,8 @@ import { OpenAICompatibleProvider } from "../provider";
 export class MiniMax extends OpenAICompatibleProvider {
   readonly apiKeyName: keyof Env = "MINIMAX_API_KEY";
   readonly baseUrlProp: string = "https://api.minimaxi.com";
+
+  get chatCompletionPath(): string {
+    return "/v1/chat/completions";
+  }
 }
