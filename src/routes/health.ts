@@ -18,6 +18,16 @@ function maskApiKey(key: string): string {
   return "*".repeat(Math.min(10, key.length - 3)) + key.slice(-3);
 }
 
+interface ProviderKeyStatus {
+  key: string;
+  status: "valid" | "invalid" | "unknown";
+}
+
+interface ProviderStatus {
+  available: boolean;
+  keys: ProviderKeyStatus[];
+}
+
 async function checkConnectivity(
   instance: ProviderBase,
   providerName: string,
@@ -61,7 +71,7 @@ export async function status() {
     GLOBAL_ROUND_ROBIN: Config.isGlobalRoundRobinEnabled(),
   };
 
-  const providersStatus: Record<string, unknown> = {};
+  const providersStatus: Record<string, ProviderStatus> = {};
   const env = Environments.all();
   const allProviders = getAllProviders(env);
 

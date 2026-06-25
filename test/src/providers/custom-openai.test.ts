@@ -35,7 +35,7 @@ describe("CustomOpenAI Provider (Paths)", () => {
 
     const [chatUrl] = await provider.buildChatCompletionsRequest({
       body: JSON.stringify({ messages: [] }),
-      headers: {},
+      headers: new Headers(),
     });
     expect(chatUrl).toBe("/custom/chat");
 
