@@ -24,7 +24,7 @@
     "envalid": "^8.1.1",
     "ioredis": "^5.6.1",
     "pg": "^8.19.0",
-    "vafast": "^0.7.6"
+    "vafast": "^0.8.3"
   },
   "devDependencies": {
     "@types/node": "^25.3.2",
