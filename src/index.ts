@@ -48,7 +48,18 @@ server.use(cors({ origin: true }));
 server.use(requestId());
 server.use(errorMiddleware);
 
-serve(
+// Vercel imports this module as a function (api/index.ts) and only needs the fetch handler.
+export const fetchHandler = server.fetch;
+let dbReady: Promise<void> | null = null;
+export const vercelHandler = {
+  async fetch(req: Request) {
+    dbReady ??= initDb();
+    await dbReady;
+    return server.fetch(req);
+  },
+};
+
+if (!process.env.VERCEL) serve(
   {
     fetch: server.fetch,
     port: env.port,

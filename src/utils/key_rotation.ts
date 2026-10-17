@@ -17,6 +17,10 @@ export async function getNextIndex(
 ): Promise<number> {
   if (length <= 1) return 0;
 
+  // Upstash (HTTP, serverless-friendly; Vercel Marketplace injects KV_REST_API_URL/TOKEN)
+  if (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
+    return upstashGetNextIndex(keyName, length);
+  }
   if (redisConfig.url) {
     return redisGetNextIndex(keyName, length);
   }
@@ -34,6 +38,19 @@ async function redisGetNextIndex(
   const key = `key-rotation:${keyName}`;
   const current = await redis.incr(key);
   await redis.quit();
+  return (current - 1) % length;
+}
+
+async function upstashGetNextIndex(
+  keyName: string,
+  length: number,
+): Promise<number> {
+  const { Redis } = await import("@upstash/redis");
+  const redis = new Redis({
+    url: process.env.KV_REST_API_URL!,
+    token: process.env.KV_REST_API_TOKEN!,
+  });
+  const current = await redis.incr(`key-rotation:${keyName}`);
   return (current - 1) % length;
 }
 

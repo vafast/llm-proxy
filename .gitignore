@@ -177,4 +177,6 @@ dist
 config.jsonc
 config.*.jsonc
 !config.example.jsonc
-.secrets-temp.json
+.secrets-temp.jsonpublic
+.vercel
+.env*
