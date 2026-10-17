@@ -4,12 +4,12 @@
  * 验证代理真实调用上游模型并返回有效内容。
  * 需加载 .env.development 的 key，运行：npm run test:integration:model
  *
- * 说明：测试请求发往 LLM_PROXY_BASE（默认 https://llm.huyooo.com），
+ * 说明：测试请求发往 LLM_PROXY_BASE（默认 https://llm.okayok.ai），
  * 各 provider 的 API key 需在部署环境配置，本地 .env.development 仅用于 PROXY_API_KEY。
  */
 import { describe, it, expect, beforeAll } from "vitest";
 
-const BASE = process.env.LLM_PROXY_BASE ?? "https://llm.huyooo.com";
+const BASE = process.env.LLM_PROXY_BASE ?? "https://llm.okayok.ai";
 
 function getAuth(): string {
   const key = process.env.PROXY_API_KEY;

@@ -6,7 +6,7 @@
  */
 import { describe, it, expect, beforeAll } from "vitest";
 
-const BASE = process.env.LLM_PROXY_BASE ?? "https://llm.huyooo.com";
+const BASE = process.env.LLM_PROXY_BASE ?? "https://llm.okayok.ai";
 
 function getAuth(): string {
   const key = process.env.PROXY_API_KEY;
