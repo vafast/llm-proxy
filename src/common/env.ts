@@ -15,7 +15,7 @@ const parsed = cleanEnv(process.env, {
   // 代理鉴权
   PROXY_API_KEY: str({ default: "" }),
 
-  // Redis（Key 轮询，可选。Railway 等会注入对应环境的连接串）
+  // Redis（Key 轮询，可选。托管平台会注入对应环境的连接串）
   REDIS_URL: str({ default: "" }),
 
   // Provider API Keys — 海外

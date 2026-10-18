@@ -1,6 +1,6 @@
 {
   "name": "llm-proxy",
-  "description": "通用 LLM API 代理，支持多厂商统一鉴权与 Key 轮询。可部署至 Node.js、Docker、Railway 等。",
+  "description": "通用 LLM API 代理，支持多厂商统一鉴权与 Key 轮询。可部署至 Node.js、Docker 等。",
   "version": "0.3.0",
   "type": "module",
   "scripts": {

@@ -2,7 +2,7 @@
  * LLM Proxy 入口
  *
  * 架构与 ai-server 一致：
- * - 根路由（/ping）无鉴权，供负载均衡器 / Railway healthcheck 使用
+ * - 根路由（/ping）无鉴权，供负载均衡器 / 健康检查 使用
  * - 业务路由通过路由组中间件挂载 auth
  * - server.use() 只注册真正全局的中间件（cors、requestId、error）
  */
@@ -35,7 +35,7 @@ function warnIfNoAuthConfig(): void {
   }
 }
 
-// 根路由（无鉴权）- 负载均衡器 / Railway healthcheck
+// 根路由（无鉴权）- 负载均衡器 / 健康检查
 const rootRoutes = defineRoutes([
   defineRoute({ method: "GET", path: "/ping", handler: () => "Pong" }),
   defineRoute({ method: "HEAD", path: "/ping", handler: () => null }),
