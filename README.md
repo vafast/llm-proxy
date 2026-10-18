@@ -1,6 +1,6 @@
 # LLM Proxy
 
-通用 LLM API 代理，支持多厂商统一鉴权与 Key 轮询。可部署至 Node.js、Docker、Railway 等。
+通用 LLM API 代理，支持多厂商统一鉴权与 Key 轮询。可部署至 Node.js、Docker 等。
 
 基于 [Vafast](https://github.com/nicepkg/vafast) 框架构建，灵感来自 [LiteLLM](https://github.com/BerriAI/litellm)。
 
@@ -82,14 +82,6 @@ docker run -d -p 8787:8787 \
   llm-proxy
 ```
 
-#### Railway（推荐）
-
-1. 将项目推送到 GitHub
-2. 在 [railway.com](https://railway.com) 创建项目 → Deploy from GitHub repo
-3. Railway 自动检测 `Dockerfile` 并构建
-4. 在 Variables 中添加环境变量（`PROXY_API_KEY`、Provider Keys 等）
-5. 部署完成后自动分配 `xxx.up.railway.app` 域名
-
 #### Node.js 直接运行
 
 ```bash
@@ -128,7 +120,7 @@ curl -X POST https://your-domain/v1/chat/completions \
 | 变量 | 说明 |
 |------|------|
 | `ADMIN_KEY` | 管理员鉴权密钥，用于 `/admin/keys` 接口 |
-| `DATABASE_URL` | PostgreSQL 连接串（Railway 部署时自动注入；本地开发连 Railway 时手动填入公网连接串） |
+| `DATABASE_URL` | PostgreSQL 连接串 |
 
 配置 DB 后可通过 Admin API 动态创建 Key，与 `PROXY_API_KEY` 二选一用于鉴权。无 DB 时需配置 `PROXY_API_KEY`。
 
@@ -139,7 +131,7 @@ curl -X POST https://your-domain/v1/chat/completions \
 | 变量 | 说明 |
 |------|------|
 | `ENABLE_GLOBAL_ROUND_ROBIN` | 设为 `true` 开启全局轮询（默认 `false`） |
-| `REDIS_URL` | Redis 连接串（Railway 部署时自动注入；本地开发连 Railway 时手动填入） |
+| `REDIS_URL` | Redis 连接串 |
 
 未配置 Redis 时自动使用内存轮询（适用于单进程）。
 
